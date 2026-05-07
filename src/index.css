@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #050505;
+  --color-surface: #111111;
+  --color-surface2: #1a1a1a;
+  --color-surface3: #2a2a2a;
+
+  --color-accent: #e4c068;
+  --color-accent2: #f5d77c;
+  --color-muted: #a1a1aa;
+  --color-subtle: #71717a;
+  --color-wa: #25d366;
+
+  --color-science: #5ba4e8;
+  --color-commerce: #4ecb8d;
+  --color-arts: #e06e6e;
+  --color-tech: #a57de0;
+
+  --font-body: "Inter", sans-serif;
+  --font-display: "Poppins", sans-serif;
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-bg text-white font-body antialiased overflow-x-hidden;
+    line-height: 1.65;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface3 rounded;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent text-[#1a1000] font-semibold rounded-full px-8 py-3
+           transition-all duration-200 hover:-translate-y-0.5
+           hover:bg-accent2 hover:shadow-[0_8px_28px_rgba(228,192,104,0.28)]
+           cursor-pointer border-none;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-white border border-white/20 rounded-full px-7 py-3
+           font-medium transition-all duration-200
+           hover:border-white/40 hover:bg-white/5 hover:-translate-y-0.5
+           cursor-pointer;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center gap-2 bg-transparent text-white
+           border border-white/20 rounded-full px-7 py-3 font-medium
+           transition-all duration-200 hover:border-wa hover:text-wa
+           hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  .section-inner {
+    @apply max-w-[1200px] mx-auto;
+  }
+
+  .section-label {
+    @apply text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-accent mb-2;
+  }
+
+  .section-title {
+    @apply font-display font-bold tracking-tight leading-tight mb-3;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  }
+
+  .section-desc {
+    @apply text-muted mb-12 max-w-xl leading-relaxed;
+  }
+
+  .card {
+    @apply bg-surface border border-white/[0.07] rounded-2xl transition-all duration-200;
+  }
+
+  .card:hover {
+    @apply border-white/[0.13] -translate-y-1;
+  }
+}
+
+@layer utilities {
+  .nav-height {
+    height: 68px;
+  }
+}

@@ -1,0 +1,72 @@
+
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply bg-bg text-white font-body antialiased overflow-x-hidden;
+    line-height: 1.65;
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { @apply bg-bg; }
+  ::-webkit-scrollbar-thumb { @apply bg-surface3 rounded; }
+}
+
+@layer components {
+  /* Reusable button styles */
+  .btn-primary {
+    @apply bg-accent text-[#1a1000] font-semibold rounded-full px-8 py-3
+           transition-all duration-200 hover:-translate-y-0.5
+           hover:bg-accent2 hover:shadow-[0_8px_28px_rgba(228,192,104,0.28)]
+           cursor-pointer border-none;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-white border border-white/20 rounded-full px-7 py-3
+           font-medium transition-all duration-200
+           hover:border-white/40 hover:bg-white/5 hover:-translate-y-0.5
+           cursor-pointer;
+  }
+
+  .btn-whatsapp {
+    @apply inline-flex items-center gap-2 bg-transparent text-white
+           border border-white/20 rounded-full px-7 py-3 font-medium
+           transition-all duration-200 hover:border-wa hover:text-wa
+           hover:-translate-y-0.5 cursor-pointer;
+  }
+
+  /* Section wrapper */
+  .section-inner {
+    @apply max-width-content mx-auto;
+  }
+
+  .section-label {
+    @apply text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-accent mb-2;
+  }
+
+  .section-title {
+    @apply font-display font-bold tracking-tight leading-tight mb-3;
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+  }
+
+  .section-desc {
+    @apply text-muted mb-12 max-w-xl leading-relaxed;
+  }
+
+  /* Card base */
+  .card {
+    @apply bg-surface border border-white/[0.07] rounded-2xl transition-all duration-250;
+  }
+  .card:hover {
+    @apply border-white/13 -translate-y-1;
+  }
+}
+
+@layer utilities {
+  .max-width-content { max-width: 1200px; }
+  .nav-height { height: 68px; }
+}
