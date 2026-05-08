@@ -10,7 +10,6 @@ import Subjects from './pages/Subjects'
 import Courses from './pages/Courses'
 import CourseDetail from './pages/CourseDetail'
 import Register from './pages/Register'
-import VerifyEmail from './pages/VerifyEmail'
 import Login from './pages/Login'
 import MyCourses from './pages/MyCourses'
 import EnrollCourse from './pages/EnrollCourse'
@@ -49,7 +48,6 @@ export default function App() {
 
           {/* Student Auth */}
           <Route path="/register" element={<Register />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/login" element={<Login />} />
 
           {/* Student Area */}

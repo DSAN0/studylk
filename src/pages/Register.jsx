@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { studentRegister } from '../api/api'
 
 const SECTIONS = [
@@ -26,7 +26,9 @@ const SECTIONS = [
 
 export default function Register() {
   const navigate = useNavigate()
+
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
@@ -40,12 +42,17 @@ export default function Register() {
   })
 
   function set(field, value) {
-    setForm(prev => ({ ...prev, [field]: value }))
+    setForm(prev => ({
+      ...prev,
+      [field]: value,
+    }))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
+
     setError('')
+    setSuccess('')
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.')
@@ -56,10 +63,30 @@ export default function Register() {
 
     try {
       await studentRegister(form)
-      localStorage.setItem('verifyEmail', form.email)
-      navigate('/verify-email')
+
+      setSuccess('Account created successfully.')
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 1200)
+
     } catch (err) {
-      setError(JSON.stringify(err.response?.data || 'Registration failed'))
+      console.error(err)
+
+      const data = err.response?.data
+
+      if (typeof data === 'object') {
+        const firstError = Object.values(data)[0]
+
+        if (Array.isArray(firstError)) {
+          setError(firstError[0])
+        } else {
+          setError(JSON.stringify(data))
+        }
+      } else {
+        setError('Registration failed.')
+      }
+
     } finally {
       setLoading(false)
     }
@@ -70,10 +97,21 @@ export default function Register() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+        }
+
         .reg-root {
           min-height: 100vh;
-          background: linear-gradient(160deg, #F0FAF0 0%, #FAFFFE 50%, #F5F9FF 100%);
-          padding: 100px 24px 60px;
+          background:
+            radial-gradient(circle at top right, rgba(76,175,80,0.08), transparent 30%),
+            radial-gradient(circle at bottom left, rgba(59,130,246,0.08), transparent 30%),
+            linear-gradient(160deg, #F0FAF0 0%, #FAFFFE 50%, #F5F9FF 100%);
+          padding: 100px 20px 60px;
           font-family: 'Plus Jakarta Sans', sans-serif;
           color: #1A3A1A;
         }
@@ -81,15 +119,18 @@ export default function Register() {
         .reg-card {
           max-width: 760px;
           margin: 0 auto;
-          background: white;
-          border: 1.5px solid #C8E6C9;
-          border-radius: 28px;
-          padding: 44px 44px 48px;
-          box-shadow: 0 8px 48px rgba(76,175,80,0.1);
-          animation: fadeUp 0.5s ease both;
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(16px);
+          border: 1.5px solid rgba(200,230,201,0.9);
+          border-radius: 30px;
+          padding: 44px;
+          box-shadow:
+            0 10px 40px rgba(76,175,80,0.10),
+            0 2px 10px rgba(0,0,0,0.04);
+          animation: fadeUp 0.45s ease;
         }
 
-        @media (max-width: 600px) {
+        @media (max-width: 700px) {
           .reg-card {
             padding: 28px 20px 36px;
           }
@@ -98,64 +139,63 @@ export default function Register() {
         .reg-eyebrow {
           display: inline-flex;
           align-items: center;
-          gap: 7px;
+          gap: 8px;
           background: #E8F5E9;
           color: #2E7D32;
-          font-weight: 700;
-          font-size: 0.78rem;
-          padding: 5px 14px;
-          border-radius: 50px;
-          letter-spacing: 0.07em;
-          text-transform: uppercase;
-          margin-bottom: 14px;
           border: 1.5px solid #A5D6A7;
+          padding: 6px 14px;
+          border-radius: 999px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          margin-bottom: 16px;
         }
 
         .reg-title {
           font-family: 'Nunito', sans-serif;
+          font-size: clamp(2rem, 4vw, 2.8rem);
           font-weight: 900;
-          font-size: clamp(1.8rem, 4vw, 2.4rem);
-          color: #1A3A1A;
-          letter-spacing: -0.02em;
-          margin-bottom: 8px;
           line-height: 1.1;
+          margin-bottom: 10px;
+          color: #163316;
+          letter-spacing: -0.03em;
         }
 
         .reg-subtitle {
-          font-size: 0.92rem;
           color: #5A7A5A;
-          margin-bottom: 36px;
-          line-height: 1.6;
+          line-height: 1.7;
+          font-size: 0.95rem;
+          margin-bottom: 34px;
+          max-width: 580px;
         }
 
         .reg-section {
-          margin-bottom: 32px;
+          margin-bottom: 34px;
         }
 
         .reg-section-header {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           margin-bottom: 18px;
           padding-bottom: 12px;
-          border-bottom: 1.5px solid #E8F5E9;
+          border-bottom: 1px solid #E8F5E9;
         }
 
         .reg-section-icon {
-          width: 34px;
-          height: 34px;
-          background: #E8F5E9;
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
+          background: #F0FAF0;
           border: 1.5px solid #C8E6C9;
-          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 1rem;
-          flex-shrink: 0;
         }
 
         .reg-section-title {
-          font-family: 'Nunito', sans-serif;
           font-weight: 800;
           font-size: 1rem;
           color: #1A3A1A;
@@ -163,7 +203,7 @@ export default function Register() {
 
         .reg-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
           gap: 16px;
         }
 
@@ -171,113 +211,101 @@ export default function Register() {
           display: block;
           font-size: 0.8rem;
           font-weight: 700;
-          color: #5A7A5A;
-          margin-bottom: 6px;
-          letter-spacing: 0.01em;
+          color: #567056;
+          margin-bottom: 7px;
         }
 
         .reg-input {
           width: 100%;
-          padding: 11px 14px;
-          border-radius: 12px;
-          border: 1.5px solid #D1E9D1;
-          background: #FAFFFE;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 0.92rem;
+          padding: 13px 14px;
+          border-radius: 14px;
+          border: 1.5px solid #D6EED6;
+          background: rgba(250,255,254,0.9);
+          font-size: 0.93rem;
           color: #1A3A1A;
           outline: none;
-          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
-          box-sizing: border-box;
+          transition: 0.18s ease;
+          font-family: inherit;
+        }
+
+        .reg-input:focus {
+          border-color: #4CAF50;
+          box-shadow: 0 0 0 4px rgba(76,175,80,0.12);
+          background: white;
         }
 
         .reg-input::placeholder {
           color: #A8C4A8;
         }
 
-        .reg-input:focus {
-          border-color: #4CAF50;
-          box-shadow: 0 0 0 3px rgba(76,175,80,0.12);
-          background: white;
-        }
-
-        .reg-input:hover:not(:focus) {
-          border-color: #A5D6A7;
-        }
-
         .reg-error {
           background: #FEF2F2;
-          border: 1.5px solid #FECACA;
           color: #DC2626;
+          border: 1px solid #FECACA;
+          padding: 13px 14px;
           border-radius: 14px;
-          padding: 13px 16px;
-          font-size: 0.87rem;
-          margin-bottom: 24px;
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
+          margin-bottom: 18px;
+          font-size: 0.88rem;
+          font-weight: 600;
+        }
+
+        .reg-success {
+          background: #ECFDF3;
+          color: #15803D;
+          border: 1px solid #BBF7D0;
+          padding: 13px 14px;
+          border-radius: 14px;
+          margin-bottom: 18px;
+          font-size: 0.88rem;
+          font-weight: 600;
         }
 
         .reg-submit {
           width: 100%;
-          padding: 15px;
-          border-radius: 14px;
           border: none;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 1rem;
-          font-weight: 800;
-          cursor: pointer;
+          border-radius: 16px;
+          padding: 15px 18px;
           background: linear-gradient(135deg, #4CAF50, #2E7D32);
           color: white;
-          box-shadow: 0 4px 20px rgba(76,175,80,0.3);
-          transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
-          margin-top: 8px;
+          font-weight: 800;
+          font-size: 0.96rem;
+          cursor: pointer;
+          transition: 0.2s ease;
+          box-shadow: 0 10px 30px rgba(76,175,80,0.25);
         }
 
-        .reg-submit:hover:not(:disabled) {
+        .reg-submit:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(76,175,80,0.4);
+          box-shadow: 0 14px 34px rgba(76,175,80,0.32);
         }
 
         .reg-submit:disabled {
-          opacity: 0.65;
+          opacity: 0.7;
           cursor: not-allowed;
           transform: none;
         }
 
-        .reg-login-hint {
+        .reg-footer {
           text-align: center;
-          font-size: 0.88rem;
-          color: #7A9A7A;
-          margin-top: 20px;
+          margin-top: 22px;
+          color: #6B7E6B;
+          font-size: 0.9rem;
         }
 
-        .reg-login-link {
-          background: none;
-          border: none;
-          cursor: pointer;
+        .reg-footer a {
           color: #2E7D32;
+          text-decoration: none;
           font-weight: 700;
-          font-family: inherit;
-          font-size: inherit;
-          padding: 0;
+        }
+
+        .reg-footer a:hover {
           text-decoration: underline;
-          text-underline-offset: 2px;
-        }
-
-        .reg-login-link:hover {
-          color: #4CAF50;
-        }
-
-        .reg-divider {
-          height: 1.5px;
-          background: linear-gradient(90deg, transparent, #C8E6C9, transparent);
-          margin: 32px 0;
         }
 
         @keyframes fadeUp {
           from {
             opacity: 0;
-            transform: translateY(22px);
+            transform: translateY(24px);
           }
           to {
             opacity: 1;
@@ -287,64 +315,92 @@ export default function Register() {
       `}</style>
 
       <main className="reg-root">
-        <form onSubmit={handleSubmit} className="reg-card">
-          <div className="reg-eyebrow">🎓 Student Registration</div>
+        <div className="reg-card">
 
-          <h1 className="reg-title">Create your account</h1>
+          <div className="reg-eyebrow">
+            🎓 Student Registration
+          </div>
+
+          <h1 className="reg-title">
+            Create your StudyLK account
+          </h1>
 
           <p className="reg-subtitle">
-            Join StudyLK and access your enrolled courses. A verification code will be sent to your email.
+            Join StudyLK and access your enrolled courses, notes,
+            papers, daily questions and more.
           </p>
 
           {error && (
             <div className="reg-error">
-              <span>⚠️</span>
-              <span>{error}</span>
+              {error}
             </div>
           )}
 
-          {SECTIONS.map((section, si) => (
-            <div key={si} className="reg-section">
-              <div className="reg-section-header">
-                <div className="reg-section-icon">{section.icon}</div>
-                <div className="reg-section-title">{section.title}</div>
-              </div>
-
-              <div className="reg-grid">
-                {section.fields.map(f => (
-                  <div key={f.key} className="reg-field">
-                    <label>{f.label}</label>
-                    <input
-                      className="reg-input"
-                      type={f.type || 'text'}
-                      placeholder={f.placeholder || ''}
-                      value={form[f.key]}
-                      onChange={e => set(f.key, e.target.value)}
-                      required
-                    />
-                  </div>
-                ))}
-              </div>
+          {success && (
+            <div className="reg-success">
+              {success}
             </div>
-          ))}
+          )}
 
-          <div className="reg-divider" />
+          <form onSubmit={handleSubmit}>
 
-          <button type="submit" className="reg-submit" disabled={loading}>
-            {loading ? '⏳ Creating account…' : '🎓 Create Account'}
-          </button>
+            {SECTIONS.map(section => (
+              <div className="reg-section" key={section.title}>
 
-          <p className="reg-login-hint">
-            Already have an account?{' '}
+                <div className="reg-section-header">
+                  <div className="reg-section-icon">
+                    {section.icon}
+                  </div>
+
+                  <div className="reg-section-title">
+                    {section.title}
+                  </div>
+                </div>
+
+                <div className="reg-grid">
+
+                  {section.fields.map(field => (
+                    <div className="reg-field" key={field.key}>
+
+                      <label>
+                        {field.label}
+                      </label>
+
+                      <input
+                        type={field.type || 'text'}
+                        className="reg-input"
+                        placeholder={field.placeholder || ''}
+                        value={form[field.key]}
+                        onChange={e => set(field.key, e.target.value)}
+                        required
+                      />
+
+                    </div>
+                  ))}
+
+                </div>
+
+              </div>
+            ))}
+
             <button
-              type="button"
-              className="reg-login-link"
-              onClick={() => navigate('/login')}
+              type="submit"
+              className="reg-submit"
+              disabled={loading}
             >
-              Login here
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
-          </p>
-        </form>
+
+          </form>
+
+          <div className="reg-footer">
+            Already have an account?{' '}
+            <Link to="/login">
+              Login
+            </Link>
+          </div>
+
+        </div>
       </main>
     </>
   )
