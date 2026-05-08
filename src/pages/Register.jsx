@@ -55,8 +55,14 @@ export default function Register() {
     setLoading(true)
 
     try {
-      await studentRegister(form)
+      const res = await studentRegister(form)
+
       localStorage.setItem('verifyEmail', form.email)
+
+      if (res.data?.verification_code) {
+        localStorage.setItem('verifyCode', res.data.verification_code)
+      }
+
       navigate('/verify-email')
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Registration failed'))
@@ -86,7 +92,6 @@ export default function Register() {
           border-radius: 28px;
           padding: 44px 44px 48px;
           box-shadow: 0 8px 48px rgba(76,175,80,0.1);
-          animation: fadeUp 0.5s ease both;
         }
 
         @media (max-width: 600px) {
@@ -116,7 +121,6 @@ export default function Register() {
           font-weight: 900;
           font-size: clamp(1.8rem, 4vw, 2.4rem);
           color: #1A3A1A;
-          letter-spacing: -0.02em;
           margin-bottom: 8px;
           line-height: 1.1;
         }
@@ -150,8 +154,6 @@ export default function Register() {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1rem;
-          flex-shrink: 0;
         }
 
         .reg-section-title {
@@ -173,7 +175,6 @@ export default function Register() {
           font-weight: 700;
           color: #5A7A5A;
           margin-bottom: 6px;
-          letter-spacing: 0.01em;
         }
 
         .reg-input {
@@ -186,22 +187,13 @@ export default function Register() {
           font-size: 0.92rem;
           color: #1A3A1A;
           outline: none;
-          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
           box-sizing: border-box;
-        }
-
-        .reg-input::placeholder {
-          color: #A8C4A8;
         }
 
         .reg-input:focus {
           border-color: #4CAF50;
           box-shadow: 0 0 0 3px rgba(76,175,80,0.12);
           background: white;
-        }
-
-        .reg-input:hover:not(:focus) {
-          border-color: #A5D6A7;
         }
 
         .reg-error {
@@ -212,9 +204,6 @@ export default function Register() {
           padding: 13px 16px;
           font-size: 0.87rem;
           margin-bottom: 24px;
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
         }
 
         .reg-submit {
@@ -229,121 +218,85 @@ export default function Register() {
           background: linear-gradient(135deg, #4CAF50, #2E7D32);
           color: white;
           box-shadow: 0 4px 20px rgba(76,175,80,0.3);
-          transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
           margin-top: 8px;
-        }
-
-        .reg-submit:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 28px rgba(76,175,80,0.4);
         }
 
         .reg-submit:disabled {
           opacity: 0.65;
           cursor: not-allowed;
-          transform: none;
         }
 
         .reg-login-hint {
           text-align: center;
           font-size: 0.88rem;
           color: #7A9A7A;
-          margin-top: 20px;
+          margin-top: 22px;
         }
 
         .reg-login-link {
           background: none;
           border: none;
-          cursor: pointer;
           color: #2E7D32;
-          font-weight: 700;
-          font-family: inherit;
-          font-size: inherit;
-          padding: 0;
-          text-decoration: underline;
-          text-underline-offset: 2px;
-        }
-
-        .reg-login-link:hover {
-          color: #4CAF50;
-        }
-
-        .reg-divider {
-          height: 1.5px;
-          background: linear-gradient(90deg, transparent, #C8E6C9, transparent);
-          margin: 32px 0;
-        }
-
-        @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(22px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          font-weight: 800;
+          cursor: pointer;
         }
       `}</style>
 
       <main className="reg-root">
         <form onSubmit={handleSubmit} className="reg-card">
-          <div className="reg-eyebrow">🎓 Student Registration</div>
+          <div className="reg-eyebrow">✨ Join StudyLK</div>
 
-          <h1 className="reg-title">Create your account</h1>
+          <h1 className="reg-title">Create your student account</h1>
 
           <p className="reg-subtitle">
-            Join StudyLK and access your enrolled courses. A verification code will be sent to your email.
+            Register to enroll in courses and access your learning materials.
           </p>
 
           {error && (
             <div className="reg-error">
-              <span>⚠️</span>
-              <span>{error}</span>
+              ⚠️ {error}
             </div>
           )}
 
-          {SECTIONS.map((section, si) => (
-            <div key={si} className="reg-section">
+          {SECTIONS.map(section => (
+            <section key={section.title} className="reg-section">
               <div className="reg-section-header">
                 <div className="reg-section-icon">{section.icon}</div>
                 <div className="reg-section-title">{section.title}</div>
               </div>
 
               <div className="reg-grid">
-                {section.fields.map(f => (
-                  <div key={f.key} className="reg-field">
-                    <label>{f.label}</label>
+                {section.fields.map(field => (
+                  <div key={field.key} className="reg-field">
+                    <label>{field.label}</label>
                     <input
                       className="reg-input"
-                      type={f.type || 'text'}
-                      placeholder={f.placeholder || ''}
-                      value={form[f.key]}
-                      onChange={e => set(f.key, e.target.value)}
+                      type={field.type || 'text'}
+                      placeholder={field.placeholder || ''}
+                      value={form[field.key]}
+                      onChange={e => set(field.key, e.target.value)}
                       required
                     />
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
 
-          <div className="reg-divider" />
-
-          <button type="submit" className="reg-submit" disabled={loading}>
-            {loading ? '⏳ Creating account…' : '🎓 Create Account'}
+          <button disabled={loading} className="reg-submit">
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
 
-          <p className="reg-login-hint">
+          <div className="reg-login-hint">
             Already have an account?{' '}
             <button
               type="button"
               className="reg-login-link"
               onClick={() => navigate('/login')}
             >
-              Login here
+              Login
             </button>
-          </p>
+          </div>
         </form>
       </main>
     </>
