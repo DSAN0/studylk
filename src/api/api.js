@@ -7,7 +7,6 @@ const api = axios.create({
 
 function studentAuthHeader() {
   const token = localStorage.getItem('studentAccessToken')
-  console.log('STUDENT TOKEN:', token)
 
   return token
     ? { Authorization: `Bearer ${token}` }
