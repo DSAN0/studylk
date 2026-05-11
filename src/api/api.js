@@ -6,7 +6,7 @@ const api = axios.create({
 })
 
 function studentAuthHeader() {
-  const token = localStorage.getItem('studentToken')
+  const token = localStorage.getItem('studentAccessToken')
   console.log('STUDENT TOKEN:', token)
 
   return token
@@ -15,7 +15,7 @@ function studentAuthHeader() {
 }
 
 function adminAuthHeader() {
-  const token = localStorage.getItem('adminToken')
+  const token = localStorage.getItem('adminAccessToken')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

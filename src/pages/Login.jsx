@@ -15,7 +15,8 @@ export default function Login() {
     setLoading(true)
     try {
       const res = await studentLogin(form)
-      localStorage.setItem('studentToken', res.data.token)
+      localStorage.setItem('studentAccessToken', res.data.access)
+      localStorage.setItem('studentRefreshToken', res.data.refresh)
       localStorage.setItem('studentUser', JSON.stringify(res.data.student))
       navigate('/my-courses')
     } catch (err) {

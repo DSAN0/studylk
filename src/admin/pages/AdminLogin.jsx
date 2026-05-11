@@ -14,7 +14,8 @@ export default function AdminLogin() {
     setLoading(true)
     try {
       const res = await adminLogin(form)
-      localStorage.setItem('adminToken', res.data.token)
+      localStorage.setItem('adminAccessToken', res.data.access)
+      localStorage.setItem('adminRefreshToken', res.data.refresh)
       localStorage.setItem('adminUser', JSON.stringify(res.data.user))
       navigate('/admin/dashboard')
     } catch (err) {
