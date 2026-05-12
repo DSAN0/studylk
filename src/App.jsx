@@ -31,6 +31,8 @@ import AdminApprovedStudents from './admin/pages/AdminApprovedStudents'
 import AdminDailyQuestions from './admin/pages/AdminDailyQuestions'
 import AdminQuestionPapers from './admin/pages/AdminQuestionPapers'
 import AdminPaperQuestions from './admin/pages/AdminPaperQuestions'
+import AdminTopicPractice from './admin/pages/AdminTopicPractice'
+import AdminTopicQuestions from './admin/pages/AdminTopicQuestions'
 
 export default function App() {
   return (
@@ -91,7 +93,6 @@ export default function App() {
             element={<EnrollCourse />}
           />
 
-          
           <Route path="/papers/:paperId/take" element={<TakePaper />} />
           <Route path="/paper-result/:attemptId" element={<PaperResult />} />
 
@@ -176,6 +177,24 @@ export default function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminPaperQuestions />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/topic-practice"
+            element={
+              <ProtectedAdminRoute>
+                <AdminTopicPractice />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/topic-practice/:topicId/questions"
+            element={
+              <ProtectedAdminRoute>
+                <AdminTopicQuestions />
               </ProtectedAdminRoute>
             }
           />

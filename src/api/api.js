@@ -261,4 +261,45 @@ export const adminDeletePaperQuestion = id =>
     headers: adminAuthHeader(),
   })
 
+// Admin topic practice
+export const adminGetTopics = () =>
+  api.get('/admin/topics/', {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreateTopic = data =>
+  api.post('/admin/topics/', data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdateTopic = (id, data) =>
+  api.put(`/admin/topics/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeleteTopic = id =>
+  api.delete(`/admin/topics/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminGetTopicQuestions = topicId =>
+  api.get(`/admin/topics/${topicId}/questions/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreateTopicQuestion = (topicId, data) =>
+  api.post(`/admin/topics/${topicId}/questions/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdateTopicQuestion = (id, data) =>
+  api.put(`/admin/topic-questions/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeleteTopicQuestion = id =>
+  api.delete(`/admin/topic-questions/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
 export default api
