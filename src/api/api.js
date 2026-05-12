@@ -20,15 +20,22 @@ function adminAuthHeader() {
 
 // Public APIs
 export const getStreams = () => api.get('/streams/')
-export const getSubjects = streamId => api.get(`/streams/${streamId}/subjects/`)
+
+export const getSubjects = streamId =>
+  api.get(`/streams/${streamId}/subjects/`)
+
 export const getCourses = (streamId, subjectId) =>
   api.get(`/streams/${streamId}/${subjectId}/courses/`)
+
 export const getCourseDetail = (streamId, subjectId, courseId) =>
   api.get(`/streams/${streamId}/${subjectId}/courses/${courseId}/`)
 
 // Student auth
-export const studentRegister = data => api.post('/students/register/', data)
-export const studentLogin = data => api.post('/students/login/', data)
+export const studentRegister = data =>
+  api.post('/students/register/', data)
+
+export const studentLogin = data =>
+  api.post('/students/login/', data)
 
 export const studentProfile = () =>
   api.get('/students/profile/', {
@@ -63,6 +70,17 @@ export const studentSubmitDailyQuestion = data =>
     headers: studentAuthHeader(),
   })
 
+// Student topic practice
+export const getCourseTopics = courseId =>
+  api.get(`/students/courses/${courseId}/topics/`, {
+    headers: studentAuthHeader(),
+  })
+
+export const getTopicQuestions = topicId =>
+  api.get(`/students/topics/${topicId}/questions/`, {
+    headers: studentAuthHeader(),
+  })
+
 // Student question papers
 export const studentQuestionPapers = courseId =>
   api.get(`/students/courses/${courseId}/papers/`, {
@@ -89,7 +107,8 @@ export const studentPaperResult = attemptId =>
   })
 
 // Admin auth
-export const adminLogin = data => api.post('/admin/login/', data)
+export const adminLogin = data =>
+  api.post('/admin/login/', data)
 
 // Admin courses
 export const adminGetCourses = () =>

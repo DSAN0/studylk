@@ -14,6 +14,18 @@ const SECTIONS = [
     path: (id) => `/my-courses/${id}/materials`,
   },
   {
+  key: 'topic-practice',
+  icon: '📚',
+  title: 'Topic Practice',
+  description: 'Practice topic-by-topic MCQ questions anytime with instant answers and explanations.',
+  color: '#7C3AED',
+  bg: 'linear-gradient(135deg, #F3E8FF 0%, #FAF5FF 100%)',
+  border: '#D8B4FE',
+  btnBg: 'linear-gradient(135deg, #8B5CF6, #7C3AED)',
+  btnShadow: 'rgba(139,92,246,0.30)',
+  path: (id) => `/my-courses/${id}/topic-practice`,
+  },
+  {
     key: 'daily-questions',
     icon: '✏️',
     title: 'Daily Questions',
