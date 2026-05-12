@@ -13,6 +13,7 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import MyCourses from './pages/MyCourses'
 import EnrollCourse from './pages/EnrollCourse'
+import CourseOverview from './pages/CourseOverview'
 import CourseMaterials from './pages/CourseMaterials'
 import DailyQuestions from './pages/DailyQuestions'
 import CoursePapers from './pages/CoursePapers'
@@ -52,6 +53,10 @@ export default function App() {
 
           {/* Student Area */}
           <Route path="/my-courses" element={<MyCourses />} />
+          <Route
+            path="/my-courses/:courseId/overview"
+            element={<CourseOverview />}
+          />
           <Route
             path="/my-courses/:courseId/materials"
             element={<CourseMaterials />}

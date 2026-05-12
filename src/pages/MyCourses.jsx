@@ -96,15 +96,6 @@ export default function MyCourses() {
           transform: translateY(-1px);
           box-shadow: 0 6px 18px rgba(76,175,80,0.38);
         }
-        .mc-action-btn.secondary {
-          background: #F8FBF8;
-          color: #5A7A5A;
-          border: 1.5px solid #D1E9D1;
-        }
-        .mc-action-btn.secondary:hover {
-          background: #E8F5E9; color: #2E7D32;
-          border-color: #A5D6A7;
-        }
 
         .stat-card {
           background: white;
@@ -230,7 +221,6 @@ export default function MyCourses() {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '44px 24px 80px' }}>
 
           {enrollments.length === 0 ? (
-            /* Empty state */
             <div style={{
               textAlign: 'center', padding: '64px 32px',
               background: 'white', borderRadius: 24,
@@ -304,13 +294,12 @@ export default function MyCourses() {
                       {course.startDate && <span>🚀 Starts: {course.startDate}</span>}
                     </div>
 
-                    {/* Status message */}
+                    {/* Status message + action */}
                     {enrollment.status === 'pending' && (
                       <div style={{
                         background: '#FEF9E7', border: '1.5px solid #FDE68A',
                         color: '#92400E', borderRadius: 12,
                         padding: '11px 14px', fontSize: '0.84rem',
-                        marginBottom: 4,
                       }}>
                         ⏳ Your enrolment is awaiting admin approval.
                       </div>
@@ -336,26 +325,13 @@ export default function MyCourses() {
                         }}>
                           ✅ Approved! You can now access your course content.
                         </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                          <button
-                            className="mc-action-btn primary"
-                            onClick={() => navigate(`/my-courses/${course.id}/materials`)}
-                          >
-                            📄 Materials
-                          </button>
-                          <button
-                            className="mc-action-btn secondary"
-                            onClick={() => navigate(`/my-courses/${course.id}/daily-questions`)}
-                          >
-                            ✏️ Daily Questions
-                          </button>
-                          <button
-                            className="mc-action-btn secondary"
-                            onClick={() => navigate(`/my-courses/${course.id}/papers`)}
-                          >
-                            📝 Papers
-                          </button>
-                        </div>
+                        <button
+                          className="mc-action-btn primary"
+                          style={{ width: '100%', justifyContent: 'center' }}
+                          onClick={() => navigate(`/my-courses/${course.id}/overview`)}
+                        >
+                          👁️ View Course
+                        </button>
                       </div>
                     )}
                   </div>
