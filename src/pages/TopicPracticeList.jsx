@@ -37,7 +37,7 @@ export default function TopicPracticeList() {
       <div style={styles.container}>
         <button
           style={styles.backBtn}
-          onClick={() => navigate(`/my-courses/${courseId}`)}
+          onClick={() => navigate(`/my-courses/${courseId}/overview`)}
         >
           ← Back to Course
         </button>

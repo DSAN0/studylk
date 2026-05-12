@@ -19,6 +19,8 @@ import DailyQuestions from './pages/DailyQuestions'
 import CoursePapers from './pages/CoursePapers'
 import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
+import TopicPracticeList from './pages/TopicPracticeList'
+import TopicQuestions from './pages/TopicQuestions'
 
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
@@ -53,26 +55,43 @@ export default function App() {
 
           {/* Student Area */}
           <Route path="/my-courses" element={<MyCourses />} />
+
           <Route
             path="/my-courses/:courseId/overview"
             element={<CourseOverview />}
           />
+
           <Route
             path="/my-courses/:courseId/materials"
             element={<CourseMaterials />}
           />
+
           <Route
             path="/my-courses/:courseId/daily-questions"
             element={<DailyQuestions />}
           />
+
+          <Route
+            path="/my-courses/:courseId/topic-practice"
+            element={<TopicPracticeList />}
+          />
+
+          <Route
+            path="/topic-questions/:topicId"
+            element={<TopicQuestions />}
+          />
+
           <Route
             path="/my-courses/:courseId/papers"
             element={<CoursePapers />}
           />
+
           <Route
             path="/enroll/:streamId/:subjectId/:courseId"
             element={<EnrollCourse />}
           />
+
+          
           <Route path="/papers/:paperId/take" element={<TakePaper />} />
           <Route path="/paper-result/:attemptId" element={<PaperResult />} />
 
