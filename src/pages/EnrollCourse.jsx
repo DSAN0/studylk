@@ -22,9 +22,9 @@ export default function EnrollCourse() {
 
   useEffect(() => {
     async function loadData() {
-      const token        = localStorage.getItem('studentToken')
+      const token = localStorage.getItem('studentAccessToken')
       const savedStudent = localStorage.getItem('studentUser')
-      if (!token || !savedStudent) { navigate('/register'); return }
+      if (!token || !savedStudent) { navigate('/login'); return }
       setStudent(JSON.parse(savedStudent))
       try {
         const res = await getCourseDetail(streamId, subjectId, courseId)
