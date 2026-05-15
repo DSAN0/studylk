@@ -471,8 +471,8 @@ export default function CourseDetail() {
               disabled={isFull}
               onClick={() => {
                 if (isFull) return
-                const token = localStorage.getItem('studentToken')
-                if (!token) { navigate('/register'); return }
+                const token = localStorage.getItem('studentAccessToken')
+                if (!token) { navigate('/login'); return }
                 navigate(`/enroll/${streamId}/${subjectId}/${courseId}`)
               }}
             >
