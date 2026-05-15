@@ -39,7 +39,8 @@ export default function AdminDashboard() {
   }
 
   function logout() {
-    localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminAccessToken')
+    localStorage.removeItem('adminRefreshToken')
     localStorage.removeItem('adminUser')
     navigate('/admin/login')
   }
@@ -127,6 +128,13 @@ export default function AdminDashboard() {
             className="bg-surface2 border border-white/10 rounded-xl px-4 py-2 text-sm text-muted hover:text-white"
           >
             Question Papers
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/topic-practice')}
+            className="bg-surface2 border border-white/10 rounded-xl px-4 py-2 text-sm text-muted hover:text-white"
+          >
+            Topic Practice
           </button>
         </div>
 
