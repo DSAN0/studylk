@@ -4,6 +4,7 @@ import {
   adminCreateTopicQuestion,
   adminDeleteTopicQuestion,
   adminGetTopicQuestions,
+  adminUpdateTopicQuestion,
 } from '../../api/api'
 
 const emptyForm = {
@@ -30,6 +31,7 @@ export default function AdminTopicQuestions() {
 
   const [questions, setQuestions] = useState([])
   const [form, setForm] = useState(emptyForm)
+  const [editingId, setEditingId] = useState(null)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const [expanded, setExpanded] = useState(null)
@@ -51,18 +53,50 @@ export default function AdminTopicQuestions() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  function startEdit(q) {
+    setEditingId(q.id)
+    setExpanded(q.id)
+
+    setForm({
+      question_text: q.question_text || '',
+      option_a: q.option_a || '',
+      option_b: q.option_b || '',
+      option_c: q.option_c || '',
+      option_d: q.option_d || '',
+      correct_answer: q.correct_answer || 'A',
+      explanation: q.explanation || '',
+      ordering: q.ordering || 0,
+    })
+
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setForm(emptyForm)
+    setError('')
+  }
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setSaving(true)
 
+    const payload = {
+      ...form,
+      topic: Number(topicId),
+      ordering: Number(form.ordering),
+    }
+
     try {
-      await adminCreateTopicQuestion(topicId, {
-        ...form,
-        ordering: Number(form.ordering),
-      })
+      if (editingId) {
+        await adminUpdateTopicQuestion(editingId, payload)
+      } else {
+        await adminCreateTopicQuestion(topicId, payload)
+      }
 
       setForm(emptyForm)
+      setEditingId(null)
       await loadData()
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Save failed'))
@@ -76,6 +110,11 @@ export default function AdminTopicQuestions() {
 
     try {
       await adminDeleteTopicQuestion(id)
+
+      if (editingId === id) {
+        cancelEdit()
+      }
+
       await loadData()
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Delete failed'))
@@ -140,7 +179,6 @@ export default function AdminTopicQuestions() {
           border-radius: 50px;
           cursor: pointer;
           font-family: 'Plus Jakarta Sans', sans-serif;
-          transition: background 0.18s, color 0.18s;
         }
 
         .atq-back-btn:hover {
@@ -218,7 +256,6 @@ export default function AdminTopicQuestions() {
           font-weight: 700;
           color: #5A7A5A;
           margin-bottom: 6px;
-          letter-spacing: 0.01em;
         }
 
         .atq-input,
@@ -233,12 +270,6 @@ export default function AdminTopicQuestions() {
           font-size: 0.9rem;
           color: #1A3A1A;
           outline: none;
-          transition: border-color 0.18s, box-shadow 0.18s;
-        }
-
-        .atq-input::placeholder,
-        .atq-textarea::placeholder {
-          color: #A8C4A8;
         }
 
         .atq-input:focus,
@@ -303,8 +334,15 @@ export default function AdminTopicQuestions() {
           font-weight: 800;
           font-size: 0.9rem;
           cursor: pointer;
-          transition: all 0.18s;
           font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .atq-submit-row {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-top: 8px;
         }
 
         .atq-submit-btn {
@@ -321,18 +359,18 @@ export default function AdminTopicQuestions() {
           cursor: pointer;
           font-family: 'Plus Jakarta Sans', sans-serif;
           box-shadow: 0 4px 16px rgba(76,175,80,0.28);
-          transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
-          margin-top: 8px;
         }
 
-        .atq-submit-btn:hover:not(:disabled) {
-          transform: translateY(-2px);
-          box-shadow: 0 7px 22px rgba(76,175,80,0.38);
-        }
-
-        .atq-submit-btn:disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
+        .atq-cancel-btn {
+          background: white;
+          color: #5A7A5A;
+          border: 1.5px solid #D1E9D1;
+          font-weight: 700;
+          font-size: 0.9rem;
+          padding: 11px 22px;
+          border-radius: 50px;
+          cursor: pointer;
+          font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .atq-q-row {
@@ -341,11 +379,11 @@ export default function AdminTopicQuestions() {
           border-radius: 16px;
           margin-bottom: 12px;
           overflow: hidden;
-          transition: border-color 0.18s;
         }
 
-        .atq-q-row:hover {
-          border-color: #A5D6A7;
+        .atq-q-row.editing {
+          border-color: #8B5CF6;
+          box-shadow: 0 0 0 3px rgba(139,92,246,0.12);
         }
 
         .atq-q-header {
@@ -389,7 +427,8 @@ export default function AdminTopicQuestions() {
           flex-shrink: 0;
         }
 
-        .atq-correct-badge {
+        .atq-correct-badge,
+        .atq-order-badge {
           font-size: 0.72rem;
           font-weight: 800;
           padding: 3px 10px;
@@ -398,26 +437,33 @@ export default function AdminTopicQuestions() {
         }
 
         .atq-order-badge {
-          font-size: 0.72rem;
-          font-weight: 700;
-          padding: 3px 10px;
-          border-radius: 50px;
           background: #F8FBF8;
-          border: 1.5px solid #E8F5E9;
+          border-color: #E8F5E9;
           color: #5A7A5A;
         }
 
+        .atq-edit-btn,
         .atq-delete-btn {
           background: none;
           border: none;
           cursor: pointer;
           font-size: 0.8rem;
           font-weight: 700;
-          color: #DC2626;
           padding: 4px 10px;
           border-radius: 8px;
-          transition: background 0.18s;
           font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        .atq-edit-btn {
+          color: #7C3AED;
+        }
+
+        .atq-edit-btn:hover {
+          background: #F5F3FF;
+        }
+
+        .atq-delete-btn {
+          color: #DC2626;
         }
 
         .atq-delete-btn:hover {
@@ -462,21 +508,6 @@ export default function AdminTopicQuestions() {
           from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
         }
-
-        @media (max-width: 640px) {
-          .atq-card {
-            padding: 20px;
-          }
-
-          .atq-q-header {
-            align-items: flex-start;
-          }
-
-          .atq-q-meta {
-            flex-wrap: wrap;
-            justify-content: flex-end;
-          }
-        }
       `}</style>
 
       <main className="atq-root">
@@ -510,8 +541,8 @@ export default function AdminTopicQuestions() {
 
           <div className="atq-card">
             <div className="atq-card-title">
-              <span className="atq-icon-box">➕</span>
-              Add New Topic Question
+              <span className="atq-icon-box">{editingId ? '✏️' : '➕'}</span>
+              {editingId ? 'Edit Topic Question' : 'Add New Topic Question'}
             </div>
 
             <form onSubmit={handleSubmit}>
@@ -550,13 +581,7 @@ export default function AdminTopicQuestions() {
                           {key}
                         </div>
 
-                        <span
-                          style={{
-                            fontSize: '0.78rem',
-                            fontWeight: 700,
-                            color: c.color,
-                          }}
-                        >
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: c.color }}>
                           Option {key}
                         </span>
                       </div>
@@ -630,9 +655,21 @@ export default function AdminTopicQuestions() {
                 />
               </div>
 
-              <button type="submit" className="atq-submit-btn" disabled={saving}>
-                {saving ? '⏳ Saving…' : '✓ Add Question'}
-              </button>
+              <div className="atq-submit-row">
+                <button type="submit" className="atq-submit-btn" disabled={saving}>
+                  {saving
+                    ? '⏳ Saving…'
+                    : editingId
+                      ? '✓ Update Question'
+                      : '✓ Add Question'}
+                </button>
+
+                {editingId && (
+                  <button type="button" className="atq-cancel-btn" onClick={cancelEdit}>
+                    Cancel Edit
+                  </button>
+                )}
+              </div>
             </form>
           </div>
 
@@ -643,16 +680,9 @@ export default function AdminTopicQuestions() {
             </div>
 
             {questions.length === 0 ? (
-              <div
-                style={{
-                  textAlign: 'center',
-                  padding: '36px 20px',
-                  color: '#7A9A7A',
-                  fontSize: '0.92rem',
-                }}
-              >
+              <div style={{ textAlign: 'center', padding: '36px 20px', color: '#7A9A7A' }}>
                 <div style={{ fontSize: '2.5rem', marginBottom: 10 }}>📭</div>
-                No topic questions added yet. Use the form above to add the first one.
+                No topic questions added yet.
               </div>
             ) : (
               questions.map((q, i) => {
@@ -660,13 +690,12 @@ export default function AdminTopicQuestions() {
                 const corrColor = OPTION_COLORS[q.correct_answer] || OPTION_COLORS.A
 
                 return (
-                  <div key={q.id} className="atq-q-row">
+                  <div key={q.id} className={`atq-q-row ${editingId === q.id ? 'editing' : ''}`}>
                     <div
                       className="atq-q-header"
                       onClick={() => setExpanded(isOpen ? null : q.id)}
                     >
                       <div className="atq-q-num">{q.ordering || i + 1}</div>
-
                       <div className="atq-q-text">{q.question_text}</div>
 
                       <div className="atq-q-meta">
@@ -682,6 +711,16 @@ export default function AdminTopicQuestions() {
                         </span>
 
                         <span className="atq-order-badge">#{q.ordering || i + 1}</span>
+
+                        <button
+                          className="atq-edit-btn"
+                          onClick={ev => {
+                            ev.stopPropagation()
+                            startEdit(q)
+                          }}
+                        >
+                          Edit
+                        </button>
 
                         <button
                           className="atq-delete-btn"
@@ -701,16 +740,7 @@ export default function AdminTopicQuestions() {
 
                     {isOpen && (
                       <div className="atq-q-body">
-                        <div
-                          style={{
-                            fontSize: '0.9rem',
-                            color: '#1A3A1A',
-                            fontWeight: 600,
-                            lineHeight: 1.6,
-                            marginTop: 14,
-                            marginBottom: 4,
-                          }}
-                        >
+                        <div style={{ fontSize: '0.9rem', color: '#1A3A1A', fontWeight: 600, lineHeight: 1.6, marginTop: 14 }}>
                           {q.question_text}
                         </div>
 
@@ -743,23 +773,12 @@ export default function AdminTopicQuestions() {
                                   {opt}
                                 </div>
 
-                                <span
-                                  style={{
-                                    color: isCorrect ? c.color : '#4A6A4A',
-                                    fontWeight: isCorrect ? 700 : 500,
-                                  }}
-                                >
+                                <span style={{ color: isCorrect ? c.color : '#4A6A4A', fontWeight: isCorrect ? 700 : 500 }}>
                                   {val}
                                 </span>
 
                                 {isCorrect && (
-                                  <span
-                                    style={{
-                                      marginLeft: 'auto',
-                                      color: c.color,
-                                      fontSize: '0.8rem',
-                                    }}
-                                  >
+                                  <span style={{ marginLeft: 'auto', color: c.color }}>
                                     ✓
                                   </span>
                                 )}
