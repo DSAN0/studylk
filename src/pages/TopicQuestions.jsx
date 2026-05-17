@@ -343,7 +343,11 @@ export default function TopicQuestions() {
                       {globalNum}
                     </span>
                     <div className="tq-q-text">
-                      <MathText text={q.question_text} />
+                      {q.question_text?.split('\n').map((line, i) => (
+                        <p key={i} className="tq-line">
+                          <MathText text={line} />
+                        </p>
+                      ))}
                     </div>
                   </div>
 
@@ -373,7 +377,11 @@ export default function TopicQuestions() {
                         />
                         <span className="tq-option-letter">{opt}</span>
                         <span className="tq-option-text">
-                          <MathText text={value} />
+                          {value?.split('\n').map((line, i) => (
+                            <span key={i} className="tq-line">
+                              <MathText text={line} />
+                            </span>
+                          ))}
                         </span>
                       </label>
                     )
@@ -393,7 +401,11 @@ export default function TopicQuestions() {
                         <div className="tq-explanation">
                           <strong>Explanation:</strong>
                           <div className="tq-explanation-text">
-                            <MathText text={q.explanation} />
+                            {q.explanation?.split('\n').map((line, i) => (
+                              <p key={i} className="tq-line">
+                                <MathText text={line} />
+                              </p>
+                            ))}
                           </div>
                         </div>
                       )}
@@ -1138,6 +1150,16 @@ function BaseStyles() {
       .katex { font-size: 1.05em !important; }
       .katex-html { white-space: nowrap; }
       .katex-display { overflow-x: auto; overflow-y: hidden; padding: 4px 0; }
+
+      .tq-line {
+        display: block;
+        margin: 0 0 8px;
+        white-space: pre-wrap;
+      }
+
+      .tq-option-text .tq-line {
+        margin-bottom: 4px;
+      }
 
       /* ── RESPONSIVE ── */
       @media (max-width: 768px) {
