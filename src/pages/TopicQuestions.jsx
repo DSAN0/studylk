@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getTopicQuestions } from '../api/api'
+import { getTopicQuestions, submitTopicQuestion } from '../api/api'
 import MathText from '../components/MathText'
 
 const QUESTIONS_PER_PAGE = 20
@@ -36,6 +36,18 @@ export default function TopicQuestions() {
         const res = await getTopicQuestions(topicId)
         setTopic(res.data.topic)
         setQuestions(res.data.questions)
+
+        const savedAnswers = {}
+        const savedShownAnswers = {}
+
+        res.data.attempts.forEach(attempt => {
+          savedAnswers[attempt.question] = attempt.selected_answer
+          savedShownAnswers[attempt.question] = true
+        })
+
+        setAnswers(savedAnswers)
+        setShownAnswers(savedShownAnswers)
+
       } catch (err) {
         alert(JSON.stringify(err.response?.data || 'Could not load questions'))
         navigate('/my-courses')
@@ -78,13 +90,23 @@ export default function TopicQuestions() {
     setAnswers(prev => ({ ...prev, [questionId]: opt }))
   }
 
-  function showAnswer(questionId) {
-    if (!answers[questionId]) {
-      alert('Please select an answer first')
-      return
-    }
-    setShownAnswers(prev => ({ ...prev, [questionId]: true }))
+  async function showAnswer(questionId) {
+  if (!answers[questionId]) {
+    alert('Please select an answer first')
+    return
   }
+
+  try {
+    await submitTopicQuestion({
+      questionId: questionId,
+      selected_answer: answers[questionId],
+    })
+
+    setShownAnswers(prev => ({ ...prev, [questionId]: true }))
+  } catch (err) {
+    alert(JSON.stringify(err.response?.data || 'Could not save answer'))
+  }
+ }
 
   function scrollToQuestionId(qId) {
     const el = questionRefs.current[qId]

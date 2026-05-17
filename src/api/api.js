@@ -81,6 +81,12 @@ export const getTopicQuestions = topicId =>
     headers: studentAuthHeader(),
   })
 
+export function submitTopicQuestion(data) {
+  return api.post('/students/topic-questions/submit/', data, {
+    headers: studentAuthHeader(),
+  })
+}  
+
 // Student question papers
 export const studentQuestionPapers = courseId =>
   api.get(`/students/courses/${courseId}/papers/`, {
