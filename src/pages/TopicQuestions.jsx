@@ -392,7 +392,9 @@ export default function TopicQuestions() {
                       {q.explanation && (
                         <div className="tq-explanation">
                           <strong>Explanation:</strong>
-                          <div><MathText text={q.explanation} /></div>
+                          <div className="tq-explanation-text">
+                            <MathText text={q.explanation} />
+                          </div>
                         </div>
                       )}
 
@@ -1029,6 +1031,10 @@ function BaseStyles() {
         padding-top: 10px;
         border-top: 1px solid rgba(0,0,0,0.08);
       }
+      
+      .tq-explanation-text {
+         white-space: pre-line;
+      }
 
       .tq-next-hint {
         margin-top: 12px;
@@ -1115,11 +1121,17 @@ function BaseStyles() {
 
       /* Math styles */
       .math-text {
-        display: inline;
-        white-space: normal;
+        display: block;
+        white-space: pre-line;
         word-break: normal;
         overflow-wrap: anywhere;
         line-height: 1.9;
+      }
+
+      .tq-q-text,
+      .tq-option-text,
+      .tq-explanation {
+        white-space: pre-line;
       }
 
       .math-text span { display: inline; }

@@ -504,6 +504,11 @@ export default function AdminTopicQuestions() {
           margin-top: 8px;
         }
 
+        .atq-q-body,
+        .atq-explanation {
+          white-space: pre-line;
+        }
+
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(14px); }
           to { opacity: 1; transform: translateY(0); }
