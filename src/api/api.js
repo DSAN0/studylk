@@ -5,6 +5,122 @@ const api = axios.create({
   timeout: 10000,
 })
 
+let isRefreshing = false
+let failedQueue = []
+
+function processQueue(error, token = null) {
+  failedQueue.forEach(prom => {
+    if (error) prom.reject(error)
+    else prom.resolve(token)
+  })
+  failedQueue = []
+}
+
+function isAdminRequest(url = '') {
+  return url.startsWith('/admin/')
+}
+
+function getAccessToken(url = '') {
+  return isAdminRequest(url)
+    ? localStorage.getItem('adminAccessToken')
+    : localStorage.getItem('studentAccessToken')
+}
+
+function getRefreshToken(url = '') {
+  return isAdminRequest(url)
+    ? localStorage.getItem('adminRefreshToken')
+    : localStorage.getItem('studentRefreshToken')
+}
+
+function saveAccessToken(url = '', token) {
+  if (isAdminRequest(url)) {
+    localStorage.setItem('adminAccessToken', token)
+  } else {
+    localStorage.setItem('studentAccessToken', token)
+  }
+}
+
+function logoutUser(url = '') {
+  if (isAdminRequest(url)) {
+    localStorage.removeItem('adminAccessToken')
+    localStorage.removeItem('adminRefreshToken')
+    localStorage.removeItem('adminUser')
+    window.location.href = '/admin/login'
+  } else {
+    localStorage.removeItem('studentAccessToken')
+    localStorage.removeItem('studentRefreshToken')
+    localStorage.removeItem('studentUser')
+    window.location.href = '/login'
+  }
+}
+
+api.interceptors.request.use(config => {
+  const token = getAccessToken(config.url)
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+
+  return config
+})
+
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    const originalRequest = error.config
+
+    if (
+      error.response?.status !== 401 ||
+      originalRequest?._retry ||
+      originalRequest?.url === '/token/refresh/'
+    ) {
+      return Promise.reject(error)
+    }
+
+    originalRequest._retry = true
+
+    const refreshToken = getRefreshToken(originalRequest.url)
+
+    if (!refreshToken) {
+      logoutUser(originalRequest.url)
+      return Promise.reject(error)
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ resolve, reject })
+      }).then(token => {
+        originalRequest.headers.Authorization = `Bearer ${token}`
+        return api(originalRequest)
+      })
+    }
+
+    isRefreshing = true
+
+    try {
+      const res = await api.post('/token/refresh/', {
+        refresh: refreshToken,
+      })
+
+      const newAccessToken = res.data.access
+
+      saveAccessToken(originalRequest.url, newAccessToken)
+
+      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`
+
+      processQueue(null, newAccessToken)
+
+      return api(originalRequest)
+    } catch (refreshError) {
+      processQueue(refreshError, null)
+      logoutUser(originalRequest.url)
+      return Promise.reject(refreshError)
+    } finally {
+      isRefreshing = false
+    }
+  }
+)
+
 function studentAuthHeader() {
   const token = localStorage.getItem('studentAccessToken')
 
