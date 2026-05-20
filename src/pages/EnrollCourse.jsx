@@ -4,10 +4,10 @@ import { createEnrollment, getCourseDetail } from '../api/api'
 
 const COMPANY_ACCOUNT = {
   bank: 'Bank of Ceylon',
-  branch: 'Colombo',
-  name: 'StudyLK Education',
-  number: '1234567890',
-  whatsapp: '94771234567',
+  branch: 'Kandy',
+  name: 'W.M.B.J.B.Wijekoon',
+  number: '87418221',
+  whatsapp: '0724082156',
 }
 
 export default function EnrollCourse() {
@@ -45,7 +45,7 @@ export default function EnrollCourse() {
     try {
       const res = await createEnrollment({
         courseId: course.id,
-        payment_note: 'Student confirmed enrollment. Payment receipt will be sent via WhatsApp within 2 weeks.',
+        payment_note: 'Student confirmed enrollment. Payment receipt will be sent via WhatsApp within one week.',
       })
       const whatsappUrl =
         res.data.whatsappUrl ||
