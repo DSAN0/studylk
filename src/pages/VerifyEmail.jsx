@@ -28,10 +28,10 @@ export default function VerifyEmail() {
   }
 
   return (
-    <main className="min-h-screen bg-bg pt-[90px] px-6 flex justify-center">
+    <main className="min-h-screen bg-bg pt-22.5 px-6 flex justify-center">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-surface border border-white/[0.08] rounded-2xl p-7 h-fit"
+        className="w-full max-w-md bg-surface border border-white/8 rounded-2xl p-7 h-fit"
       >
         <h1 className="font-display font-bold text-2xl mb-2">Verify Email</h1>
         <p className="text-muted text-sm mb-6">

@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://web-production-eb900.up.railway.app/api/',
+  baseURL: 'https://web-production-eb900.up.railway.app/api',
   timeout: 10000,
 })
 
@@ -17,7 +17,7 @@ function processQueue(error, token = null) {
 }
 
 function isAdminRequest(url = '') {
-  return url.startsWith('admin/')
+  return url.startsWith('/admin/')
 }
 
 function getAccessToken(url = '') {
@@ -55,10 +55,6 @@ function logoutUser(url = '') {
 }
 
 api.interceptors.request.use(config => {
-  if (config.url?.startsWith('/')) {
-    config.url = config.url.substring(1)
-  }
-
   const token = getAccessToken(config.url)
 
   if (token) {
@@ -76,7 +72,7 @@ api.interceptors.response.use(
     if (
       error.response?.status !== 401 ||
       originalRequest?._retry ||
-      originalRequest?.url === 'token/refresh/'
+      originalRequest?.url === '/token/refresh/'
     ) {
       return Promise.reject(error)
     }
@@ -154,9 +150,6 @@ export const getCourseDetail = (streamId, subjectId, courseId) =>
 export const studentRegister = data =>
   api.post('/students/register/', data)
 
-export const studentVerifyEmail = data =>
-  api.post('/students/verify-email/', data)
-
 export const studentLogin = data =>
   api.post('/students/login/', data)
 
@@ -208,7 +201,7 @@ export function submitTopicQuestion(data) {
   return api.post('/students/topic-questions/submit/', data, {
     headers: studentAuthHeader(),
   })
-}
+}  
 
 // Student question papers
 export const studentQuestionPapers = courseId =>
