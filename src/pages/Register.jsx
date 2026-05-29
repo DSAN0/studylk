@@ -28,6 +28,7 @@ export default function Register() {
   const navigate = useNavigate()
 
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
@@ -49,7 +50,9 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+
     setError('')
+    setSuccess('')
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.')
@@ -61,9 +64,15 @@ export default function Register() {
     try {
       await studentRegister(form)
 
-      localStorage.setItem('verifyEmail', form.email)
-      navigate('/verify-email')
+      setSuccess('Account created successfully.')
+
+      setTimeout(() => {
+        navigate('/login')
+      }, 1200)
+
     } catch (err) {
+      console.error(err)
+
       const data = err.response?.data
 
       if (typeof data === 'object') {
@@ -71,14 +80,13 @@ export default function Register() {
 
         if (Array.isArray(firstError)) {
           setError(firstError[0])
-        } else if (typeof firstError === 'string') {
-          setError(firstError)
         } else {
           setError(JSON.stringify(data))
         }
       } else {
         setError('Registration failed.')
       }
+
     } finally {
       setLoading(false)
     }
@@ -241,6 +249,17 @@ export default function Register() {
           font-weight: 600;
         }
 
+        .reg-success {
+          background: #ECFDF3;
+          color: #15803D;
+          border: 1px solid #BBF7D0;
+          padding: 13px 14px;
+          border-radius: 14px;
+          margin-bottom: 18px;
+          font-size: 0.88rem;
+          font-weight: 600;
+        }
+
         .reg-submit {
           width: 100%;
           border: none;
@@ -297,6 +316,7 @@ export default function Register() {
 
       <main className="reg-root">
         <div className="reg-card">
+
           <div className="reg-eyebrow">
             🎓 Student Registration
           </div>
@@ -306,8 +326,8 @@ export default function Register() {
           </h1>
 
           <p className="reg-subtitle">
-            Join StudyLK and verify your email to access your enrolled courses,
-            notes, papers, daily questions and more.
+            Join StudyLK and access your enrolled courses, notes,
+            papers, daily questions and more.
           </p>
 
           {error && (
@@ -316,9 +336,17 @@ export default function Register() {
             </div>
           )}
 
+          {success && (
+            <div className="reg-success">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
+
             {SECTIONS.map(section => (
               <div className="reg-section" key={section.title}>
+
                 <div className="reg-section-header">
                   <div className="reg-section-icon">
                     {section.icon}
@@ -330,8 +358,10 @@ export default function Register() {
                 </div>
 
                 <div className="reg-grid">
+
                   {section.fields.map(field => (
                     <div className="reg-field" key={field.key}>
+
                       <label>
                         {field.label}
                       </label>
@@ -344,9 +374,12 @@ export default function Register() {
                         onChange={e => set(field.key, e.target.value)}
                         required
                       />
+
                     </div>
                   ))}
+
                 </div>
+
               </div>
             ))}
 
@@ -357,6 +390,7 @@ export default function Register() {
             >
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
+
           </form>
 
           <div className="reg-footer">
@@ -365,6 +399,7 @@ export default function Register() {
               Login
             </Link>
           </div>
+
         </div>
       </main>
     </>
