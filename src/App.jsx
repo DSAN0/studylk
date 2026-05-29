@@ -21,7 +21,6 @@ import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
 import TopicPracticeList from './pages/TopicPracticeList'
 import TopicQuestions from './pages/TopicQuestions'
-import VerifyEmail from './pages/VerifyEmail'
 
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
@@ -55,7 +54,7 @@ export default function App() {
           {/* Student Auth */}
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/verify-email" element={<VerifyEmail />} />  
+
           {/* Student Area */}
           <Route path="/my-courses" element={<MyCourses />} />
 
