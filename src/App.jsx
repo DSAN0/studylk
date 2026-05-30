@@ -11,6 +11,7 @@ import Courses from './pages/Courses'
 import CourseDetail from './pages/CourseDetail'
 import Register from './pages/Register'
 import Login from './pages/Login'
+import VerifyEmail from './pages/VerifyEmail'
 import MyCourses from './pages/MyCourses'
 import EnrollCourse from './pages/EnrollCourse'
 import CourseOverview from './pages/CourseOverview'
@@ -54,6 +55,7 @@ export default function App() {
           {/* Student Auth */}
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
 
           {/* Student Area */}
           <Route path="/my-courses" element={<MyCourses />} />

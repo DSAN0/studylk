@@ -28,7 +28,6 @@ export default function Register() {
   const navigate = useNavigate()
 
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
@@ -52,7 +51,6 @@ export default function Register() {
     e.preventDefault()
 
     setError('')
-    setSuccess('')
 
     if (form.password !== form.confirmPassword) {
       setError('Passwords do not match.')
@@ -64,11 +62,9 @@ export default function Register() {
     try {
       await studentRegister(form)
 
-      setSuccess('Account created successfully.')
-
-      setTimeout(() => {
-        navigate('/login')
-      }, 1200)
+      // Save email so VerifyEmail page can pre-fill it
+      localStorage.setItem('verifyEmail', form.email)
+      navigate('/verify-email')
 
     } catch (err) {
       console.error(err)
@@ -249,17 +245,6 @@ export default function Register() {
           font-weight: 600;
         }
 
-        .reg-success {
-          background: #ECFDF3;
-          color: #15803D;
-          border: 1px solid #BBF7D0;
-          padding: 13px 14px;
-          border-radius: 14px;
-          margin-bottom: 18px;
-          font-size: 0.88rem;
-          font-weight: 600;
-        }
-
         .reg-submit {
           width: 100%;
           border: none;
@@ -272,6 +257,7 @@ export default function Register() {
           cursor: pointer;
           transition: 0.2s ease;
           box-shadow: 0 10px 30px rgba(76,175,80,0.25);
+          font-family: inherit;
         }
 
         .reg-submit:hover {
@@ -336,12 +322,6 @@ export default function Register() {
             </div>
           )}
 
-          {success && (
-            <div className="reg-success">
-              {success}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit}>
 
             {SECTIONS.map(section => (
@@ -388,7 +368,7 @@ export default function Register() {
               className="reg-submit"
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? 'Creating Account...' : 'Create Account →'}
             </button>
 
           </form>

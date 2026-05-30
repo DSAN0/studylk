@@ -20,7 +20,16 @@ export default function Login() {
       localStorage.setItem('studentUser', JSON.stringify(res.data.student))
       navigate('/my-courses')
     } catch (err) {
-      setError(JSON.stringify(err.response?.data || 'Login failed'))
+      const data = err.response?.data
+
+      // Backend signals that the account exists but email isn't verified yet
+      if (data?.needsVerification) {
+        localStorage.setItem('verifyEmail', data.email || form.email)
+        navigate('/verify-email')
+        return
+      }
+
+      setError(data?.detail || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
@@ -172,19 +181,6 @@ export default function Login() {
         .login-divider::before, .login-divider::after {
           content: ''; flex: 1; height: 1.5px; background: #E8F5E9;
         }
-
-        .login-register-hint {
-          text-align: center; font-size: 0.88rem; color: #7A9A7A;
-          margin-top: 18px;
-        }
-        .login-register-link {
-          background: none; border: none; cursor: pointer;
-          color: #2E7D32; font-weight: 700;
-          font-family: inherit; font-size: inherit;
-          padding: 0; text-decoration: underline;
-          text-underline-offset: 2px;
-        }
-        .login-register-link:hover { color: #4CAF50; }
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(22px); }

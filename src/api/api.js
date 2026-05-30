@@ -150,6 +150,12 @@ export const getCourseDetail = (streamId, subjectId, courseId) =>
 export const studentRegister = data =>
   api.post('/students/register/', data)
 
+export const studentVerifyEmail = data =>
+  api.post('/students/verify-email/', data)
+
+export const studentResendVerification = data =>
+  api.post('/students/resend-verification/', data)
+
 export const studentLogin = data =>
   api.post('/students/login/', data)
 
@@ -201,7 +207,7 @@ export function submitTopicQuestion(data) {
   return api.post('/students/topic-questions/submit/', data, {
     headers: studentAuthHeader(),
   })
-}  
+}
 
 // Student question papers
 export const studentQuestionPapers = courseId =>
