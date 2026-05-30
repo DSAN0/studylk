@@ -2,7 +2,7 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: 'https://web-production-eb900.up.railway.app/api',
-  timeout: 10000,
+  timeout: 30000,   // increased from 10000 → email APIs can take a moment
 })
 
 let isRefreshing = false
