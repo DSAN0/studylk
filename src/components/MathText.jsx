@@ -12,17 +12,42 @@ function normalizeText(text = '') {
 function autoWrapMath(text = '') {
   let value = normalizeText(text)
 
-  // already has $...$
+  // Already contains explicit math
   if (value.includes('$')) return value
 
-  // auto wrap common LaTeX/math expressions
+  // Scientific notation
   value = value.replace(
     /(\d+(\.\d+)?\s*\\times\s*10\^\{?-?\d+\}?\s*[a-zA-Z]*)/g,
     '$$$1$$'
   )
 
+  // Chemical formulas
   value = value.replace(
-    /(\\frac\{.*?\}\{.*?\}|\\sqrt\{.*?\}|[a-zA-Z]\^\{?.*?\}?|[a-zA-Z]_\{?.*?\}?)/g,
+    /\b(?:[A-Z][a-z]?(?:_\{?\d+\}?|\d+)?)+\b/g,
+    '$$$&$$'
+  )
+
+  // Fractions
+  value = value.replace(
+    /(\\frac\{.*?\}\{.*?\})/g,
+    '$$$1$$'
+  )
+
+  // Square roots
+  value = value.replace(
+    /(\\sqrt\{.*?\})/g,
+    '$$$1$$'
+  )
+
+  // Superscripts
+  value = value.replace(
+    /([a-zA-Z]\^\{?.+?\}?)/g,
+    '$$$1$$'
+  )
+
+  // Subscripts
+  value = value.replace(
+    /([a-zA-Z]_\{?.+?\}?)/g,
     '$$$1$$'
   )
 
@@ -42,12 +67,16 @@ export default function MathText({ text = '' }) {
         if (part.startsWith('$') && part.endsWith('$')) {
           const math = part.slice(1, -1).trim()
 
-          return (
-            <InlineMath
-              key={index}
-              math={math}
-            />
-          )
+          try {
+            return (
+              <InlineMath
+                key={index}
+                math={math}
+              />
+            )
+          } catch {
+            return <span key={index}>{part}</span>
+          }
         }
 
         return (
