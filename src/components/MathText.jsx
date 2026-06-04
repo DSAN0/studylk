@@ -1,9 +1,27 @@
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 
-// Convert \times, \div etc. that are NOT inside $...$ to their Unicode equivalents
-// so plain text rendering looks correct even without LaTeX
-function renderPart(text) {
+// Fix broken patterns like: $5.0 $\times$ V_{1}$
+// These should be merged into: $5.0 \times V_{1}$
+function fixBrokenMath(text) {
+  // Merge adjacent $...$ blocks that have \times or \div between them
+  // Pattern: $...$  \times  $...$ => $... \times ...$
+  let result = text
+
+  // Repeatedly merge: $A$ \command $B$ => $A \command B$
+  // Also handles: $A$ \command{...} $B$
+  const mergePattern = /\$([^$]+)\$\s*(\\[a-zA-Z]+(?:\{[^}]*\})*)\s*\$([^$]+)\$/g
+
+  let prev
+  do {
+    prev = result
+    result = result.replace(mergePattern, '$$$1 $2 $3$$')
+  } while (result !== prev)
+
+  return result
+}
+
+function renderPlainText(text) {
   return text
     .replace(/\\times/g, '×')
     .replace(/\\div/g, '÷')
@@ -17,10 +35,8 @@ function renderPart(text) {
 }
 
 export default function MathText({ text = '' }) {
-  const value = String(text).trim()
+  const value = fixBrokenMath(String(text).trim())
 
-  // Split on $...$ but handle it carefully
-  // This regex captures both the delimiters and content
   const parts = value.split(/(\$[^$]+\$)/g)
 
   return (
@@ -34,15 +50,14 @@ export default function MathText({ text = '' }) {
             <InlineMath
               key={index}
               math={math}
-              renderError={(error) => (
+              renderError={() => (
                 <span style={{ color: 'red', fontSize: '0.85em' }}>{math}</span>
               )}
             />
           )
         }
 
-        // Plain text — convert any stray LaTeX commands to Unicode
-        return <span key={index}>{renderPart(part)}</span>
+        return <span key={index}>{renderPlainText(part)}</span>
       })}
     </span>
   )
