@@ -1,63 +1,60 @@
 import 'katex/dist/katex.min.css'
 import { InlineMath } from 'react-katex'
 
-// Fix broken patterns like: $5.0 $\times$ V_{1}$
-// These should be merged into: $5.0 \times V_{1}$
-function fixBrokenMath(text) {
-  // Merge adjacent $...$ blocks that have \times or \div between them
-  // Pattern: $...$  \times  $...$ => $... \times ...$
-  let result = text
-
-  // Repeatedly merge: $A$ \command $B$ => $A \command B$
-  // Also handles: $A$ \command{...} $B$
-  const mergePattern = /\$([^$]+)\$\s*(\\[a-zA-Z]+(?:\{[^}]*\})*)\s*\$([^$]+)\$/g
-
-  let prev
-  do {
-    prev = result
-    result = result.replace(mergePattern, '$$$1 $2 $3$$')
-  } while (result !== prev)
-
-  return result
+function normalizeText(text = '') {
+  return String(text)
+    .replace(/\\times/g, ' \\times ')
+    .replace(/\\div/g, ' \\div ')
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
-function renderPlainText(text) {
-  return text
-    .replace(/\\times/g, '×')
-    .replace(/\\div/g, '÷')
-    .replace(/\\cdot/g, '·')
-    .replace(/\\pm/g, '±')
-    .replace(/\\leq/g, '≤')
-    .replace(/\\geq/g, '≥')
-    .replace(/\\neq/g, '≠')
-    .replace(/\\approx/g, '≈')
-    .replace(/\\infty/g, '∞')
+function autoWrapMath(text = '') {
+  let value = normalizeText(text)
+
+  // already has $...$
+  if (value.includes('$')) return value
+
+  // auto wrap common LaTeX/math expressions
+  value = value.replace(
+    /(\d+(\.\d+)?\s*\\times\s*10\^\{?-?\d+\}?\s*[a-zA-Z]*)/g,
+    '$$$1$$'
+  )
+
+  value = value.replace(
+    /(\\frac\{.*?\}\{.*?\}|\\sqrt\{.*?\}|[a-zA-Z]\^\{?.*?\}?|[a-zA-Z]_\{?.*?\}?)/g,
+    '$$$1$$'
+  )
+
+  return value
 }
 
 export default function MathText({ text = '' }) {
-  const value = fixBrokenMath(String(text).trim())
+  const prepared = autoWrapMath(text)
 
-  const parts = value.split(/(\$[^$]+\$)/g)
+  const parts = prepared.split(/(\$.*?\$)/g)
 
   return (
     <span className="math-text">
       {parts.map((part, index) => {
         if (!part) return null
 
-        if (part.startsWith('$') && part.endsWith('$') && part.length > 2) {
+        if (part.startsWith('$') && part.endsWith('$')) {
           const math = part.slice(1, -1).trim()
+
           return (
             <InlineMath
               key={index}
               math={math}
-              renderError={() => (
-                <span style={{ color: 'red', fontSize: '0.85em' }}>{math}</span>
-              )}
             />
           )
         }
 
-        return <span key={index}>{renderPlainText(part)}</span>
+        return (
+          <span key={index}>
+            {part}
+          </span>
+        )
       })}
     </span>
   )
