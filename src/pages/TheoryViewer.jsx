@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getSubjectTopics, getTopicTheorySections } from '../api'
+import { getSubjectTopics, getTopicTheorySections } from '../api/api'
 import MathText from '../components/MathText'
 
 // ─── Section type callout config ───────────────────────────────────────────
