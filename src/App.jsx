@@ -22,6 +22,7 @@ import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
 import TopicPracticeList from './pages/TopicPracticeList'
 import TopicQuestions from './pages/TopicQuestions'
+import TheoryViewer from './pages/TheoryViewer'
 
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
@@ -97,6 +98,8 @@ export default function App() {
 
           <Route path="/papers/:paperId/take" element={<TakePaper />} />
           <Route path="/paper-result/:attemptId" element={<PaperResult />} />
+
+          <Route path="/my-courses/:courseId/subjects/:subjectId/theory" element={<TheoryViewer />} />
 
           {/* Admin Auth */}
           <Route path="/admin/login" element={<AdminLogin />} />
