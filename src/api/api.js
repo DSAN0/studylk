@@ -234,15 +234,6 @@ export const studentPaperResult = attemptId =>
     headers: studentAuthHeader(),
   })
 
-export const getSubjectTopics = (subjectId) =>
-  axios.get(`/subjects/${subjectId}/topics/`)
-  // Returns: { subject: { id, title, icon }, topics: [{ id, title, order }] }
-
-export const getTopicTheorySections = (topicId) =>
-  axios.get(`/topics/${topicId}/theory/`)
-  // Returns: { sections: [{ id, title, content, type, order }] }
-
-
 // Admin auth
 export const adminLogin = data =>
   api.post('/admin/login/', data)
