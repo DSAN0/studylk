@@ -22,6 +22,7 @@ import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
 import TopicPracticeList from './pages/TopicPracticeList'
 import TopicQuestions from './pages/TopicQuestions'
+import TheoryViewer from './pages/TheoryViewer'
 
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
@@ -63,6 +64,11 @@ export default function App() {
           <Route
             path="/my-courses/:courseId/overview"
             element={<CourseOverview />}
+          />
+
+          <Route
+            path="/my-courses/:courseId/theory"
+            element={<TheoryViewer />}
           />
 
           <Route

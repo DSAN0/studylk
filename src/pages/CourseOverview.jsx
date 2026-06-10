@@ -14,6 +14,18 @@ const SECTIONS = [
     path: (id) => `/my-courses/${id}/materials`,
   },
   {
+    key: 'theory',
+    icon: '📖',
+    title: 'Theory',
+    description: 'Read structured theory notes topic by topic, with definitions, examples, formulas and more.',
+    color: '#0E7490',
+    bg: 'linear-gradient(135deg, #ECFEFF 0%, #F0FEFF 100%)',
+    border: '#A5F3FC',
+    btnBg: 'linear-gradient(135deg, #06B6D4, #0E7490)',
+    btnShadow: 'rgba(6,182,212,0.30)',
+    path: (id) => `/my-courses/${id}/theory`,
+  },
+  {
   key: 'topic-practice',
   icon: '📚',
   title: 'Topic Practice',
@@ -78,6 +90,8 @@ export default function CourseOverview() {
         .co-section-card:nth-child(1) { animation-delay: 0.05s; }
         .co-section-card:nth-child(2) { animation-delay: 0.13s; }
         .co-section-card:nth-child(3) { animation-delay: 0.21s; }
+        .co-section-card:nth-child(4) { animation-delay: 0.29s; }
+        .co-section-card:nth-child(5) { animation-delay: 0.37s; }
 
         .co-go-btn {
           display: inline-flex; align-items: center; justify-content: center; gap: 7px;

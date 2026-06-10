@@ -430,4 +430,15 @@ export const adminDeleteTopicQuestion = id =>
     headers: adminAuthHeader(),
   })
 
+// Student theory
+export const getSubjectTopics = courseId =>
+  api.get(`/students/courses/${courseId}/theory/topics/`, {
+    headers: studentAuthHeader(),
+  })
+
+export const getTopicTheorySections = topicId =>
+  api.get(`/students/theory/topics/${topicId}/sections/`, {
+    headers: studentAuthHeader(),
+  })
+
 export default api
