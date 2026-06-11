@@ -21,7 +21,11 @@ const SECTION_TYPES = {
 //   getTopicTheorySections(topicId) → { sections: [{ id, title, content, type, order }] }
 
 export default function TheoryViewer() {
-  const { subjectId } = useParams()
+  const { courseId } = useParams()
+
+  console.log("Course ID:", courseId)
+  console.log("Params:", useParams())
+  
   const navigate = useNavigate()
 
   const [subject,        setSubject]        = useState(null)
@@ -34,13 +38,13 @@ export default function TheoryViewer() {
   const [sidebarOpen,    setSidebarOpen]    = useState(false)  // mobile drawer
 
   const contentRef = useRef(null)
-  const STORAGE_KEY = `studylk_theory_read_${subjectId}`
+  const STORAGE_KEY = `studylk_theory_read_${courseId}`
 
   // ── Load topics on mount ─────────────────────────────────────────────────
   useEffect(() => {
     async function loadTopics() {
       try {
-        const res = await getSubjectTopics(subjectId)
+        const res = await getSubjectTopics(courseId)
         setSubject(res.data.subject)
         const tList = res.data.topics ?? []
         setTopics(tList)
@@ -64,7 +68,7 @@ export default function TheoryViewer() {
       }
     }
     loadTopics()
-  }, [subjectId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [courseId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fetch sections for a topic ───────────────────────────────────────────
   async function loadSections(topic) {
