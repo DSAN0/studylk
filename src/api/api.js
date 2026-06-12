@@ -441,4 +441,46 @@ export const getTopicTheorySections = topicId =>
     headers: studentAuthHeader(),
   })
 
+// Admin theory topics
+export const adminGetTheoryTopics = () =>
+  api.get('/admin/theory-topics/', {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreateTheoryTopic = data =>
+  api.post('/admin/theory-topics/', data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdateTheoryTopic = (id, data) =>
+  api.put(`/admin/theory-topics/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeleteTheoryTopic = id =>
+  api.delete(`/admin/theory-topics/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+// Admin theory sections
+export const adminGetTheorySections = topicId =>
+  api.get(`/admin/theory-topics/${topicId}/sections/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreateTheorySection = (topicId, data) =>
+  api.post(`/admin/theory-topics/${topicId}/sections/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdateTheorySection = (id, data) =>
+  api.put(`/admin/theory-sections/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeleteTheorySection = id =>
+  api.delete(`/admin/theory-sections/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
 export default api

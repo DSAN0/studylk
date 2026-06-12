@@ -35,6 +35,8 @@ import AdminQuestionPapers from './admin/pages/AdminQuestionPapers'
 import AdminPaperQuestions from './admin/pages/AdminPaperQuestions'
 import AdminTopicPractice from './admin/pages/AdminTopicPractice'
 import AdminTopicQuestions from './admin/pages/AdminTopicQuestions'
+import AdminTheory from './admin/pages/AdminTheory'
+import AdminTheorySections from './admin/pages/AdminTheorySections'
 
 export default function App() {
   return (
@@ -203,6 +205,24 @@ export default function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminTopicQuestions />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/theory"
+            element={
+              <ProtectedAdminRoute>
+                <AdminTheory />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/theory/:topicId/sections"
+            element={
+              <ProtectedAdminRoute>
+                <AdminTheorySections />
               </ProtectedAdminRoute>
             }
           />
