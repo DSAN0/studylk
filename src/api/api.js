@@ -483,4 +483,65 @@ export const adminDeleteTheorySection = id =>
     headers: adminAuthHeader(),
   })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// PAST PAPERS — add these functions to your existing api.js
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Student past papers: list years + parts for a course
+// Expected response shape:
+// [
+//   {
+//     year: 2023,
+//     papers: [
+//       { id: 1, part_number: 1, part_label: "Part 1 – MCQ", question_count: 50, is_mcq: true },
+//       { id: 2, part_number: 2, part_label: "Part 2 – Essay", question_count: 6, is_mcq: false }
+//     ]
+//   },
+//   ...
+// ]
+export const getPastPaperYears = courseId =>
+  api.get(`/students/courses/${courseId}/past-papers/`, {
+    headers: studentAuthHeader(),
+  })
+
+
+// Student past paper questions: questions + existing MCQ attempts for a single paper part
+// Expected response shape:
+// {
+//   paper: { id, part_number, part_label, year, is_mcq },
+//   questions: [
+//     // For MCQ (is_mcq: true):
+//     {
+//       id, question_text,
+//       option_a, option_b, option_c, option_d, option_e,
+//       correct_answer,   // 'A' | 'B' | 'C' | 'D' | 'E'
+//       explanation       // optional
+//     },
+//     // For Essay (is_mcq: false):
+//     {
+//       id, question_text,
+//       marks,            // optional integer
+//       answer,           // long model answer string
+//       sub_questions: [  // optional array
+//         { text, marks, answer }
+//       ]
+//     }
+//   ],
+//   attempts: [           // only relevant for MCQ parts
+//     { question: <questionId>, selected_answer: 'A' }
+//   ]
+// }
+export const getPastPaperQuestions = paperId =>
+  api.get(`/students/past-papers/${paperId}/questions/`, {
+    headers: studentAuthHeader(),
+  })
+
+
+// Submit a MCQ answer for a past paper question (saves attempt)
+// Payload: { question_id: <id>, selected_answer: 'A' | ... }
+export const submitPastPaperMCQ = data =>
+  api.post('/students/past-paper-questions/submit/', data, {
+    headers: studentAuthHeader(),
+  })  
+
 export default api

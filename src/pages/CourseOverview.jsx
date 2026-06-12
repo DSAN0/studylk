@@ -61,6 +61,18 @@ const SECTIONS = [
     btnShadow: 'rgba(59,130,246,0.30)',
     path: (id) => `/my-courses/${id}/papers`,
   },
+  {
+  key: 'past-papers',
+  icon: '🗂️',
+  title: 'Past Papers',
+  description: 'Browse and attempt real past exam papers year by year, including MCQ and essay sections with model answers.',
+  color: '#1D4ED8',
+  bg: 'linear-gradient(135deg, #EFF6FF 0%, #F5F8FF 100%)',
+  border: '#BFDBFE',
+  btnBg: 'linear-gradient(135deg, #3B82F6, #1D4ED8)',
+  btnShadow: 'rgba(59,130,246,0.30)',
+  path: (id) => `/my-courses/${id}/past-papers`,
+  }
 ]
 
 export default function CourseOverview() {
