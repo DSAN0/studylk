@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { label: 'Question Papers',     path: '/admin/question-papers' },
   { label: 'Topic Practice',      path: '/admin/topic-practice' },
   { label: 'Theory',              path: '/admin/theory' },
+  { label: 'Past Papers',         path: '/admin/past-papers' },
 ]
 
 export default function AdminDashboard() {

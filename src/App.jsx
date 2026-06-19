@@ -39,6 +39,8 @@ import AdminTopicPractice from './admin/pages/AdminTopicPractice'
 import AdminTopicQuestions from './admin/pages/AdminTopicQuestions'
 import AdminTheory from './admin/pages/AdminTheory'
 import AdminTheorySections from './admin/pages/AdminTheorySections'
+import AdminPastPapers from './admin/pages/AdminPastPapers'
+import AdminPastPaperQuestions from './admin/pages/AdminPastPaperQuestions'
 
 export default function App() {
   return (
@@ -112,7 +114,7 @@ export default function App() {
             path="/my-courses/:courseId/past-papers"
             element={<PastPapers />}
           />
- 
+
           <Route
             path="/my-courses/:courseId/past-papers/:paperId"
             element={<PastPaperView />}
@@ -235,6 +237,24 @@ export default function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminTheorySections />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/past-papers"
+            element={
+              <ProtectedAdminRoute>
+                <AdminPastPapers />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/past-papers/:paperId/questions"
+            element={
+              <ProtectedAdminRoute>
+                <AdminPastPaperQuestions />
               </ProtectedAdminRoute>
             }
           />

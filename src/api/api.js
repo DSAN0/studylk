@@ -544,4 +544,94 @@ export const submitPastPaperMCQ = data =>
     headers: studentAuthHeader(),
   })  
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PAST PAPERS — ADMIN — add these functions to your existing api.js
+// (Place alongside your other admin functions, e.g. after adminDeleteTheorySection)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Admin past papers (paper parts: year + part_number + is_mcq)
+export const adminGetPastPapers = () =>
+  api.get('/admin/past-papers/', {
+    headers: adminAuthHeader(),
+  })
+
+export const adminGetPastPaper = id =>
+  api.get(`/admin/past-papers/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreatePastPaper = data =>
+  api.post('/admin/past-papers/', data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdatePastPaper = (id, data) =>
+  api.put(`/admin/past-papers/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeletePastPaper = id =>
+  api.delete(`/admin/past-papers/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+// Admin past paper — MCQ questions
+export const adminGetPastPaperMCQQuestions = paperId =>
+  api.get(`/admin/past-papers/${paperId}/mcq-questions/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreatePastPaperMCQQuestion = (paperId, data) =>
+  api.post(`/admin/past-papers/${paperId}/mcq-questions/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdatePastPaperMCQQuestion = (id, data) =>
+  api.put(`/admin/past-paper-mcq-questions/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeletePastPaperMCQQuestion = id =>
+  api.delete(`/admin/past-paper-mcq-questions/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+// Admin past paper — Essay questions
+export const adminGetPastPaperEssayQuestions = paperId =>
+  api.get(`/admin/past-papers/${paperId}/essay-questions/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreatePastPaperEssayQuestion = (paperId, data) =>
+  api.post(`/admin/past-papers/${paperId}/essay-questions/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdatePastPaperEssayQuestion = (id, data) =>
+  api.put(`/admin/past-paper-essay-questions/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeletePastPaperEssayQuestion = id =>
+  api.delete(`/admin/past-paper-essay-questions/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+// Admin past paper — Essay sub-questions
+export const adminCreatePastPaperEssaySubQuestion = (essayQuestionId, data) =>
+  api.post(`/admin/past-paper-essay-questions/${essayQuestionId}/sub-questions/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdatePastPaperEssaySubQuestion = (id, data) =>
+  api.put(`/admin/past-paper-essay-subquestions/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeletePastPaperEssaySubQuestion = id =>
+  api.delete(`/admin/past-paper-essay-subquestions/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
 export default api
