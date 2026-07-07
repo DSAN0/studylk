@@ -1,40 +1,40 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import {
-  adminGetCourses,
-  adminGetTheoryMainTopics,
-  adminCreateTheoryMainTopic,
-  adminUpdateTheoryMainTopic,
-  adminDeleteTheoryMainTopic,
+  adminGetTheoryMainTopic,
+  adminGetTheoryTopics,
+  adminCreateTheoryTopic,
+  adminUpdateTheoryTopic,
+  adminDeleteTheoryTopic,
 } from '../../api/api'
 
 const emptyForm = {
-  course: '',
   title: '',
   ordering: 0,
   is_active: true,
 }
 
-export default function AdminTheory() {
+export default function AdminTheoryTopics() {
+  const { mainTopicId } = useParams()
   const navigate = useNavigate()
 
-  const [courses, setCourses] = useState([])
-  const [mainTopics, setMainTopics] = useState([])
-  const [form,    setForm]    = useState(emptyForm)
+  const [mainTopic, setMainTopic] = useState(null)
+  const [topics,    setTopics]    = useState([])
+  const [form,      setForm]      = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
-  const [error,   setError]   = useState('')
-  const [saving,  setSaving]  = useState(false)
+  const [error,     setError]     = useState('')
+  const [saving,    setSaving]    = useState(false)
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => { loadData() }, [mainTopicId])
 
   async function loadData() {
     try {
-      const [cRes, mRes] = await Promise.all([
-        adminGetCourses(),
-        adminGetTheoryMainTopics(),
+      const [mtRes, tRes] = await Promise.all([
+        adminGetTheoryMainTopic(mainTopicId),
+        adminGetTheoryTopics(mainTopicId),
       ])
-      setCourses(cRes.data)
-      setMainTopics(mRes.data)
+      setMainTopic(mtRes.data)
+      setTopics(tRes.data)
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Could not load data'))
     }
@@ -44,13 +44,12 @@ export default function AdminTheory() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function startEdit(mainTopic) {
-    setEditingId(mainTopic.id)
+  function startEdit(topic) {
+    setEditingId(topic.id)
     setForm({
-      course:    mainTopic.course,
-      title:     mainTopic.title,
-      ordering:  mainTopic.ordering,
-      is_active: mainTopic.is_active,
+      title:     topic.title,
+      ordering:  topic.ordering,
+      is_active: topic.is_active,
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -66,11 +65,11 @@ export default function AdminTheory() {
     setError('')
     setSaving(true)
     try {
-      const payload = { ...form, ordering: Number(form.ordering) }
+      const payload = { ...form, ordering: Number(form.ordering), main_topic: Number(mainTopicId) }
       if (editingId) {
-        await adminUpdateTheoryMainTopic(editingId, payload)
+        await adminUpdateTheoryTopic(editingId, payload)
       } else {
-        await adminCreateTheoryMainTopic(payload)
+        await adminCreateTheoryTopic(payload)
       }
       setForm(emptyForm)
       setEditingId(null)
@@ -83,18 +82,15 @@ export default function AdminTheory() {
   }
 
   async function remove(id) {
-    if (!confirm('Delete this main topic, along with all its sub-topics and sections?')) return
+    if (!confirm('Delete this sub-topic and all its sections?')) return
     try {
-      await adminDeleteTheoryMainTopic(id)
+      await adminDeleteTheoryTopic(id)
       if (editingId === id) cancelEdit()
       await loadData()
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Delete failed'))
     }
   }
-
-  // Group main topics by course for display
-  const courseMap = Object.fromEntries(courses.map(c => [c.id, c.title]))
 
   return (
     <>
@@ -107,10 +103,12 @@ export default function AdminTheory() {
           {/* ── Title row ── */}
           <div style={s.titleRow}>
             <div>
-              <p style={s.eyebrow}>Admin · Theory</p>
-              <h1 style={s.h1}>Theory Main Topics</h1>
+              <p style={s.eyebrow}>
+                Admin · Theory{mainTopic?.courseTitle ? ` · ${mainTopic.courseTitle}` : ''}
+              </p>
+              <h1 style={s.h1}>{mainTopic ? mainTopic.title : 'Sub-topics'}</h1>
             </div>
-            <BackBtn onClick={() => navigate('/admin/dashboard')} />
+            <BackBtn onClick={() => navigate('/admin/theory')} />
           </div>
 
           {error && <ErrorBanner msg={error} onClose={() => setError('')} />}
@@ -118,31 +116,17 @@ export default function AdminTheory() {
           {/* ── Create / Edit form ── */}
           <form onSubmit={handleSubmit} style={s.formCard}>
             <SectionTitle
-              icon="📖"
-              title={editingId ? 'Edit Main Topic' : 'Create Main Topic'}
+              icon="📚"
+              title={editingId ? 'Edit Sub-topic' : 'Create Sub-topic'}
             />
 
             <div style={s.grid2}>
-              <FormField label="Course">
-                <select
-                  style={s.input}
-                  value={form.course}
-                  onChange={e => set('course', e.target.value)}
-                  required
-                >
-                  <option value="">Select course…</option>
-                  {courses.map(c => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
-                  ))}
-                </select>
-              </FormField>
-
-              <FormField label="Main Topic Title">
+              <FormField label="Sub-topic Title">
                 <input
                   style={s.input}
                   value={form.title}
                   onChange={e => set('title', e.target.value)}
-                  placeholder="e.g. Topic 1: Cell Structure"
+                  placeholder="e.g. 1.1 Cell Wall"
                   required
                 />
               </FormField>
@@ -161,12 +145,12 @@ export default function AdminTheory() {
             <div style={s.checkRow}>
               <input
                 type="checkbox"
-                id="theory_main_topic_active"
+                id="theory_topic_active"
                 checked={form.is_active}
                 onChange={e => set('is_active', e.target.checked)}
                 style={{ accentColor: '#0E7490', width: 15, height: 15 }}
               />
-              <label htmlFor="theory_main_topic_active" style={s.checkLabel}>
+              <label htmlFor="theory_topic_active" style={s.checkLabel}>
                 Active (visible to students)
               </label>
             </div>
@@ -179,7 +163,7 @@ export default function AdminTheory() {
                 onMouseEnter={e => { if (!saving) e.currentTarget.style.opacity = '0.88' }}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
               >
-                {saving ? 'Saving…' : editingId ? '✓ Update Main Topic' : '+ Create Main Topic'}
+                {saving ? 'Saving…' : editingId ? '✓ Update Sub-topic' : '+ Create Sub-topic'}
               </button>
 
               {editingId && (
@@ -196,41 +180,37 @@ export default function AdminTheory() {
             </div>
           </form>
 
-          {/* ── Main topics list ── */}
+          {/* ── Sub-topics list ── */}
           <section style={s.listCard}>
-            <SectionTitle icon="📋" title={`All Main Topics (${mainTopics.length})`} />
+            <SectionTitle icon="📋" title={`Sub-topics (${topics.length})`} />
 
-            {mainTopics.length === 0 ? (
-              <Empty text="No main topics created yet." />
+            {topics.length === 0 ? (
+              <Empty text="No sub-topics created yet." />
             ) : (
               <div style={s.cardList}>
-                {mainTopics.map(mainTopic => (
+                {topics.map((topic, i) => (
                   <div
-                    key={mainTopic.id}
+                    key={topic.id}
                     style={s.topicRow}
                     onMouseEnter={e => e.currentTarget.style.borderColor = '#A5F3FC'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#E8F5E9'}
                   >
                     {/* Icon */}
-                    <div style={s.topicIcon}>📖</div>
+                    <div style={s.topicIcon}>{String(i + 1).padStart(2, '0')}</div>
 
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3 style={s.rowTitle}>{mainTopic.title}</h3>
+                      <h3 style={s.rowTitle}>{topic.title}</h3>
                       <p style={s.rowMeta}>
-                        <span style={s.courseTag}>
-                          {mainTopic.courseTitle || courseMap[mainTopic.course] || 'Course'}
-                        </span>
-                        <Dot />
-                        <span>📚 {mainTopic.subtopicCount ?? 0} sub-topics</span>
+                        <span>📄 {topic.sectionCount ?? 0} sections</span>
                         <Dot />
                         <span style={{
                           ...s.statusPill,
-                          background: mainTopic.is_active ? '#DCFCE7' : '#F1F5F9',
-                          color:      mainTopic.is_active ? '#166534' : '#64748B',
-                          border:     `1px solid ${mainTopic.is_active ? '#BBF7D0' : '#E2E8F0'}`,
+                          background: topic.is_active ? '#DCFCE7' : '#F1F5F9',
+                          color:      topic.is_active ? '#166534' : '#64748B',
+                          border:     `1px solid ${topic.is_active ? '#BBF7D0' : '#E2E8F0'}`,
                         }}>
-                          {mainTopic.is_active ? 'Active' : 'Hidden'}
+                          {topic.is_active ? 'Active' : 'Hidden'}
                         </span>
                       </p>
                     </div>
@@ -238,15 +218,15 @@ export default function AdminTheory() {
                     {/* Actions */}
                     <div style={s.actionGroup}>
                       <button
-                        onClick={() => navigate(`/admin/theory/${mainTopic.id}/topics`)}
+                        onClick={() => navigate(`/admin/theory/${topic.id}/sections`)}
                         style={s.btnPrimary}
                         onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
                         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                       >
-                        + Sub-topics
+                        + Sections
                       </button>
                       <button
-                        onClick={() => startEdit(mainTopic)}
+                        onClick={() => startEdit(topic)}
                         style={s.editBtn}
                         onMouseEnter={e => { e.currentTarget.style.background = '#ECFEFF'; e.currentTarget.style.color = '#0E7490' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#06B6D4' }}
@@ -254,7 +234,7 @@ export default function AdminTheory() {
                         Edit
                       </button>
                       <button
-                        onClick={() => remove(mainTopic.id)}
+                        onClick={() => remove(topic.id)}
                         style={s.deleteBtn}
                         onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.color = '#991B1B' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#EF4444' }}
@@ -310,7 +290,7 @@ function BackBtn({ onClick }) {
       onMouseEnter={e => { e.currentTarget.style.background = '#E8F5E9'; e.currentTarget.style.color = '#2E7D32' }}
       onMouseLeave={e => { e.currentTarget.style.background = 'white';   e.currentTarget.style.color = '#4A6A4A' }}
     >
-      ← Dashboard
+      ← Main Topics
     </button>
   )
 }
@@ -394,7 +374,7 @@ const s = {
   cancelBtn:   { display: 'inline-flex', alignItems: 'center', background: 'white', color: '#64748B', fontWeight: 600, fontSize: '0.82rem', padding: '9px 18px', borderRadius: 50, border: '1.5px solid #E2E8F0', cursor: 'pointer', fontFamily: BASE, transition: 'background 0.18s', whiteSpace: 'nowrap' },
   cardList:    { display: 'flex', flexDirection: 'column', gap: 10 },
   topicRow:    { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: '#FAFCFA', border: '1.5px solid #E8F5E9', borderRadius: 16, padding: '14px 18px', transition: 'border-color 0.2s' },
-  topicIcon:   { width: 40, height: 40, borderRadius: 12, background: '#ECFEFF', border: '1.5px solid #A5F3FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 },
+  topicIcon:   { width: 40, height: 40, borderRadius: 12, background: '#ECFEFF', border: '1.5px solid #A5F3FC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800, color: '#0E7490', flexShrink: 0 },
   rowTitle:    { fontWeight: 700, fontSize: '0.875rem', color: '#1A3A1A', marginBottom: 4 },
   rowMeta:     { fontSize: '0.775rem', color: '#7A9A7A', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 },
   courseTag:   { background: '#E8F5E9', color: '#2E7D32', borderRadius: 50, padding: '2px 9px', fontSize: '0.7rem', fontWeight: 700, border: '1px solid #C8E6C9' },

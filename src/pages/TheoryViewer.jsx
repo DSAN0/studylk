@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getSubjectTopics, getTopicTheorySections } from '../api/api'
+import { getTheorySubtopics, getTopicTheorySections } from '../api/api'
 import MathText from '../components/MathText'
 
 // ─── Section type callout config ───────────────────────────────────────────
@@ -15,17 +15,19 @@ const SECTION_TYPES = {
 }
 
 // ─── Main component ─────────────────────────────────────────────────────────
-// Route:  /my-courses/:courseId/subjects/:subjectId/theory
+// Routes:
+//   /my-courses/:courseId/theory/:mainTopicId              (opens the first sub-topic)
+//   /my-courses/:courseId/theory/:mainTopicId/:topicId     (opens a specific sub-topic)
 // API expected:
-//   getSubjectTopics(subjectId)  → { subject: { id, title, icon }, topics: [{ id, title, order }] }
+//   getTheorySubtopics(mainTopicId)  → { mainTopic: { id, title, courseId }, topics: [{ id, title, ordering }] }
 //   getTopicTheorySections(topicId) → { sections: [{ id, title, content, type, order }] }
 
 export default function TheoryViewer() {
-  const { courseId, topicId } = useParams()
+  const { courseId, mainTopicId, topicId } = useParams()
 
   const navigate = useNavigate()
 
-  const [subject,        setSubject]        = useState(null)
+  const [mainTopic,      setMainTopic]      = useState(null)
   const [topics,         setTopics]         = useState([])
   const [activeTopic,    setActiveTopic]    = useState(null)
   const [sections,       setSections]       = useState([])
@@ -35,14 +37,14 @@ export default function TheoryViewer() {
   const [sidebarOpen,    setSidebarOpen]    = useState(false)  // mobile drawer
 
   const contentRef = useRef(null)
-  const STORAGE_KEY = `studylk_theory_read_${courseId}`
+  const STORAGE_KEY = `studylk_theory_read_${mainTopicId}`
 
-  // ── Load the topic list once per course ──────────────────────────────────
+  // ── Load the sub-topic list once per main topic ──────────────────────────
   useEffect(() => {
     async function loadTopics() {
       try {
-        const res = await getSubjectTopics(courseId)
-        setSubject(res.data.subject)
+        const res = await getTheorySubtopics(mainTopicId)
+        setMainTopic(res.data.mainTopic)
         setTopics(res.data.topics ?? [])
 
         // Restore localStorage read state
@@ -58,11 +60,12 @@ export default function TheoryViewer() {
       }
     }
     loadTopics()
-  }, [courseId]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [mainTopicId]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Once topics are loaded, open whichever topic the URL points to ──────
-  // (the user picks this on the Theory Topics page). Falls back to the
-  // first topic if the URL doesn't match one (or has none).
+  // ── Once sub-topics are loaded, open whichever one the URL points to ────
+  // (the user picks a main topic on the Theory Topics page, then a sub-topic
+  // from this sidebar). Falls back to the first sub-topic if the URL doesn't
+  // match one (or has none).
   useEffect(() => {
     if (loadingTopics || topics.length === 0) return
 
@@ -72,9 +75,9 @@ export default function TheoryViewer() {
       setActiveTopic(target)
       loadSections(target)
 
-      // Keep the URL in sync if we fell back to a different topic
+      // Keep the URL in sync if we fell back to a different sub-topic
       if (String(target.id) !== String(topicId)) {
-        navigate(`/my-courses/${courseId}/theory/${target.id}`, { replace: true })
+        navigate(`/my-courses/${courseId}/theory/${mainTopicId}/${target.id}`, { replace: true })
       }
     }
   }, [loadingTopics, topics, topicId]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -95,14 +98,14 @@ export default function TheoryViewer() {
     }
   }
 
-  // ── Select a topic from the sidebar ─────────────────────────────────────
+  // ── Select a sub-topic from the sidebar ─────────────────────────────────
   async function selectTopic(topic) {
-    // Mark previous topic as read
+    // Mark previous sub-topic as read
     if (activeTopic && activeTopic.id !== topic.id) markAsRead(activeTopic.id)
 
     setActiveTopic(topic)
     setSidebarOpen(false)
-    navigate(`/my-courses/${courseId}/theory/${topic.id}`, { replace: true })
+    navigate(`/my-courses/${courseId}/theory/${mainTopicId}/${topic.id}`, { replace: true })
     await loadSections(topic)
   }
 
@@ -498,7 +501,7 @@ export default function TheoryViewer() {
         {/* ── Desktop Sidebar ──────────────────────────────────── */}
         <aside className="tv-sidebar">
           <SidebarInner
-            subject={subject}
+            mainTopic={mainTopic}
             topics={topics}
             activeTopic={activeTopic}
             readTopics={readTopics}
@@ -516,7 +519,7 @@ export default function TheoryViewer() {
         />
         <div className={`tv-mobile-drawer ${sidebarOpen ? 'open' : ''}`}>
           <SidebarInner
-            subject={subject}
+            mainTopic={mainTopic}
             topics={topics}
             activeTopic={activeTopic}
             readTopics={readTopics}
@@ -542,7 +545,7 @@ export default function TheoryViewer() {
             <div className="tv-topbar-info">
               <span className="tv-topbar-sub">📖 Theory</span>
               <div className="tv-topbar-title">
-                {activeTopic ? activeTopic.title : (subject?.title ?? '')}
+                {activeTopic ? activeTopic.title : (mainTopic?.title ?? '')}
               </div>
             </div>
 
@@ -656,20 +659,20 @@ export default function TheoryViewer() {
 
 // ─── Sidebar inner (used for both desktop and mobile drawer) ─────────────────
 function SidebarInner({
-  subject, topics, activeTopic, readTopics,
+  mainTopic, topics, activeTopic, readTopics,
   readCount, progressPct, onSelectTopic, onBack,
 }) {
   return (
     <>
       <div className="tv-sb-header">
         <button className="tv-sb-back-btn" onClick={onBack}>
-          ← Back to course
+          ← Back to topics
         </button>
 
-        {/* Subject pill */}
+        {/* Main topic pill */}
         <div className="tv-sb-subject-pill">
-          {subject?.icon && <span className="tv-sb-subject-icon">{subject.icon}</span>}
-          <span className="tv-sb-subject-name">{subject?.title ?? 'Theory'}</span>
+          <span className="tv-sb-subject-icon">📚</span>
+          <span className="tv-sb-subject-name">{mainTopic?.title ?? 'Theory'}</span>
         </div>
 
         {/* Progress */}

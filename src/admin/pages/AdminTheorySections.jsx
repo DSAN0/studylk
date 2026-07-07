@@ -474,7 +474,7 @@ export default function AdminTheorySections() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span className="ats-count-badge">📄 {sections.length} sections</span>
-              <button className="ats-back-btn" onClick={() => navigate('/admin/theory')}>
+              <button className="ats-back-btn" onClick={() => navigate(-1)}>
                 ← Back to Topics
               </button>
             </div>

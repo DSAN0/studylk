@@ -1,40 +1,32 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getSubjectTopics } from '../api/api'
+import { getTheoryMainTopics } from '../api/api'
 
 // ─── Main component ─────────────────────────────────────────────────────────
 // Route:  /my-courses/:courseId/theory
 // Sits between CourseOverview and TheoryViewer:
-//   CourseOverview  →  TheoryTopics (this page)  →  TheoryViewer (:topicId)
+//   CourseOverview → TheoryTopics (this page, Main Topics) → TheoryViewer (sub-topics 1.1, 1.2…)
 //
 // API expected:
-//   getSubjectTopics(courseId) → { subject: { id, title, icon }, topics: [{ id, title, ordering, sectionCount? }] }
+//   getTheoryMainTopics(courseId) → { subject: { id, title, icon }, mainTopics: [{ id, title, ordering, subtopicCount }] }
 
 export default function TheoryTopics() {
   const { courseId } = useParams()
   const navigate = useNavigate()
 
   const [subject,    setSubject]    = useState(null)
-  const [topics,     setTopics]     = useState([])
-  const [readTopics, setReadTopics] = useState(new Set())
+  const [mainTopics, setMainTopics] = useState([])
   const [loading,    setLoading]    = useState(true)
   const [error,      setError]      = useState(false)
-
-  const STORAGE_KEY = `studylk_theory_read_${courseId}`
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       setError(false)
       try {
-        const res = await getSubjectTopics(courseId)
+        const res = await getTheoryMainTopics(courseId)
         setSubject(res.data.subject)
-        setTopics(res.data.topics ?? [])
-
-        try {
-          const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
-          setReadTopics(new Set(stored))
-        } catch { /* ignore parse errors */ }
+        setMainTopics(res.data.mainTopics ?? [])
       } catch (err) {
         console.error(err)
         setError(true)
@@ -43,10 +35,7 @@ export default function TheoryTopics() {
       }
     }
     load()
-  }, [courseId]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const readCount   = topics.filter(t => readTopics.has(t.id)).length
-  const progressPct = topics.length > 0 ? Math.round((readCount / topics.length) * 100) : 0
+  }, [courseId])
 
   return (
     <>
@@ -80,26 +69,17 @@ export default function TheoryTopics() {
           background: linear-gradient(135deg, #E8F5E9 0%, #F0FAF0 100%);
           border: 1.5px solid #C8E6C9; color: #2E7D32;
         }
-        .tt-num.read {
-          background: linear-gradient(135deg, #4CAF50, #2E7D32);
-          border-color: transparent; color: white;
-        }
         .tt-title {
           font-family: 'Nunito', sans-serif; font-weight: 800;
           font-size: 1.03rem; color: #1A3A1A; margin-bottom: 4px; line-height: 1.3;
         }
         .tt-meta {
           font-size: 0.78rem; color: #7A9A7A; font-weight: 600;
-          display: flex; align-items: center; gap: 8px;
         }
         .tt-arrow {
           flex-shrink: 0; font-size: 1.2rem; color: #A5D6A7; transition: transform 0.2s;
         }
         .tt-card:hover .tt-arrow { transform: translateX(4px); color: #2E7D32; }
-        .tt-read-badge {
-          display: inline-flex; align-items: center; gap: 4px;
-          color: #2E7D32; font-weight: 700;
-        }
       `}</style>
 
       <main style={{
@@ -162,34 +142,15 @@ export default function TheoryTopics() {
               color: '#1A3A1A', letterSpacing: '-0.02em',
               marginBottom: 8, lineHeight: 1.1,
             }}>
-              {subject?.title ?? 'Theory Topics'}
+              {subject?.title ?? 'Theory'}
             </h1>
-            <p style={{ fontSize: '0.95rem', color: '#5A7A5A', marginBottom: topics.length > 0 ? 22 : 0 }}>
-              Pick a topic to start reading structured theory notes.
+            <p style={{ fontSize: '0.95rem', color: '#5A7A5A' }}>
+              Pick a main topic to explore its sub-topics.
             </p>
-
-            {topics.length > 0 && (
-              <div style={{ maxWidth: 320 }}>
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between',
-                  fontSize: '0.75rem', fontWeight: 700, color: '#5A7A5A', marginBottom: 6,
-                }}>
-                  <span>Progress</span>
-                  <span style={{ color: '#0E7490' }}>{readCount}/{topics.length} read</span>
-                </div>
-                <div style={{ height: 7, background: '#E0F7FA', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 4,
-                    background: 'linear-gradient(90deg, #06B6D4, #0E7490)',
-                    width: `${progressPct}%`, transition: 'width 0.4s ease',
-                  }} />
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
-        {/* ── Topics list ── */}
+        {/* ── Main topics list ── */}
         <div style={{ maxWidth: 780, margin: '0 auto', padding: '40px 24px 80px' }}>
 
           {loading ? (
@@ -208,7 +169,7 @@ export default function TheoryTopics() {
               </h3>
               <p style={{ color: '#7A9A7A', fontSize: '0.9rem' }}>Please try again in a moment.</p>
             </div>
-          ) : topics.length === 0 ? (
+          ) : mainTopics.length === 0 ? (
             <div style={{
               textAlign: 'center', padding: '64px 24px',
               background: 'white', borderRadius: 20, border: '1.5px solid #E8F5E9',
@@ -223,31 +184,25 @@ export default function TheoryTopics() {
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {topics.map((topic, i) => {
-                const isRead = readTopics.has(topic.id)
-                return (
-                  <button
-                    key={topic.id}
-                    className="tt-card"
-                    style={{ animationDelay: `${i * 0.05}s` }}
-                    onClick={() => navigate(`/my-courses/${courseId}/theory/${topic.id}`)}
-                  >
-                    <div className={`tt-num ${isRead ? 'read' : ''}`}>
-                      {isRead ? '✓' : String(i + 1).padStart(2, '0')}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="tt-title">{topic.title}</div>
+              {mainTopics.map((topic, i) => (
+                <button
+                  key={topic.id}
+                  className="tt-card"
+                  style={{ animationDelay: `${i * 0.05}s` }}
+                  onClick={() => navigate(`/my-courses/${courseId}/theory/${topic.id}`)}
+                >
+                  <div className="tt-num">{String(i + 1).padStart(2, '0')}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="tt-title">{topic.title}</div>
+                    {typeof topic.subtopicCount === 'number' && (
                       <div className="tt-meta">
-                        {typeof topic.sectionCount === 'number' && (
-                          <span>{topic.sectionCount} section{topic.sectionCount === 1 ? '' : 's'}</span>
-                        )}
-                        {isRead && <span className="tt-read-badge">✓ Read</span>}
+                        {topic.subtopicCount} sub-topic{topic.subtopicCount === 1 ? '' : 's'}
                       </div>
-                    </div>
-                    <span className="tt-arrow">→</span>
-                  </button>
-                )
-              })}
+                    )}
+                  </div>
+                  <span className="tt-arrow">→</span>
+                </button>
+              ))}
             </div>
           )}
         </div>
