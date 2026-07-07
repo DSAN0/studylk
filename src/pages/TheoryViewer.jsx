@@ -21,11 +21,8 @@ const SECTION_TYPES = {
 //   getTopicTheorySections(topicId) → { sections: [{ id, title, content, type, order }] }
 
 export default function TheoryViewer() {
-  const { courseId } = useParams()
+  const { courseId, topicId } = useParams()
 
-  console.log("Course ID:", courseId)
-  console.log("Params:", useParams())
-  
   const navigate = useNavigate()
 
   const [subject,        setSubject]        = useState(null)
@@ -40,26 +37,19 @@ export default function TheoryViewer() {
   const contentRef = useRef(null)
   const STORAGE_KEY = `studylk_theory_read_${courseId}`
 
-  // ── Load topics on mount ─────────────────────────────────────────────────
+  // ── Load the topic list once per course ──────────────────────────────────
   useEffect(() => {
     async function loadTopics() {
       try {
         const res = await getSubjectTopics(courseId)
         setSubject(res.data.subject)
-        const tList = res.data.topics ?? []
-        setTopics(tList)
+        setTopics(res.data.topics ?? [])
 
         // Restore localStorage read state
         try {
           const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
           setReadTopics(new Set(stored))
         } catch { /* ignore parse errors */ }
-
-        // Auto-select first topic
-        if (tList.length > 0) {
-          await loadSections(tList[0])
-          setActiveTopic(tList[0])
-        }
       } catch (err) {
         console.error(err)
         navigate(-1)
@@ -69,6 +59,25 @@ export default function TheoryViewer() {
     }
     loadTopics()
   }, [courseId]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Once topics are loaded, open whichever topic the URL points to ──────
+  // (the user picks this on the Theory Topics page). Falls back to the
+  // first topic if the URL doesn't match one (or has none).
+  useEffect(() => {
+    if (loadingTopics || topics.length === 0) return
+
+    const target = topics.find(t => String(t.id) === String(topicId)) ?? topics[0]
+
+    if (!activeTopic || activeTopic.id !== target.id) {
+      setActiveTopic(target)
+      loadSections(target)
+
+      // Keep the URL in sync if we fell back to a different topic
+      if (String(target.id) !== String(topicId)) {
+        navigate(`/my-courses/${courseId}/theory/${target.id}`, { replace: true })
+      }
+    }
+  }, [loadingTopics, topics, topicId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Fetch sections for a topic ───────────────────────────────────────────
   async function loadSections(topic) {
@@ -93,6 +102,7 @@ export default function TheoryViewer() {
 
     setActiveTopic(topic)
     setSidebarOpen(false)
+    navigate(`/my-courses/${courseId}/theory/${topic.id}`, { replace: true })
     await loadSections(topic)
   }
 
@@ -495,7 +505,7 @@ export default function TheoryViewer() {
             readCount={readCount}
             progressPct={progressPct}
             onSelectTopic={selectTopic}
-            onBack={() => navigate(-1)}
+            onBack={() => navigate(`/my-courses/${courseId}/theory`)}
           />
         </aside>
 
@@ -513,7 +523,7 @@ export default function TheoryViewer() {
             readCount={readCount}
             progressPct={progressPct}
             onSelectTopic={selectTopic}
-            onBack={() => navigate(-1)}
+            onBack={() => navigate(`/my-courses/${courseId}/theory`)}
           />
         </div>
 

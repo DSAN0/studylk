@@ -22,6 +22,7 @@ import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
 import TopicPracticeList from './pages/TopicPracticeList'
 import TopicQuestions from './pages/TopicQuestions'
+import TheoryTopics from './pages/TheoryTopics'
 import TheoryViewer from './pages/TheoryViewer'
 import PastPapers    from './pages/PastPapers'
 import PastPaperView from './pages/PastPaperView'
@@ -74,6 +75,11 @@ export default function App() {
 
           <Route
             path="/my-courses/:courseId/theory"
+            element={<TheoryTopics />}
+          />
+
+          <Route
+            path="/my-courses/:courseId/theory/:topicId"
             element={<TheoryViewer />}
           />
 
