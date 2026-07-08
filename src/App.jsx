@@ -22,7 +22,6 @@ import TakePaper from './pages/TakePaper'
 import PaperResult from './pages/PaperResult'
 import TopicPracticeList from './pages/TopicPracticeList'
 import TopicQuestions from './pages/TopicQuestions'
-import TheoryTopics from './pages/TheoryTopics'
 import TheoryViewer from './pages/TheoryViewer'
 import PastPapers    from './pages/PastPapers'
 import PastPaperView from './pages/PastPaperView'
@@ -39,7 +38,6 @@ import AdminPaperQuestions from './admin/pages/AdminPaperQuestions'
 import AdminTopicPractice from './admin/pages/AdminTopicPractice'
 import AdminTopicQuestions from './admin/pages/AdminTopicQuestions'
 import AdminTheory from './admin/pages/AdminTheory'
-import AdminTheoryTopics from './admin/pages/AdminTheoryTopics'
 import AdminTheorySections from './admin/pages/AdminTheorySections'
 import AdminPastPapers from './admin/pages/AdminPastPapers'
 import AdminPastPaperQuestions from './admin/pages/AdminPastPaperQuestions'
@@ -76,16 +74,6 @@ export default function App() {
 
           <Route
             path="/my-courses/:courseId/theory"
-            element={<TheoryTopics />}
-          />
-
-          <Route
-            path="/my-courses/:courseId/theory/:mainTopicId"
-            element={<TheoryViewer />}
-          />
-
-          <Route
-            path="/my-courses/:courseId/theory/:mainTopicId/:topicId"
             element={<TheoryViewer />}
           />
 
@@ -240,15 +228,6 @@ export default function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminTheory />
-              </ProtectedAdminRoute>
-            }
-          />
-
-          <Route
-            path="/admin/theory/:mainTopicId/topics"
-            element={
-              <ProtectedAdminRoute>
-                <AdminTheoryTopics />
               </ProtectedAdminRoute>
             }
           />

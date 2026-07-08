@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   adminGetCourses,
-  adminGetTheoryMainTopics,
-  adminCreateTheoryMainTopic,
-  adminUpdateTheoryMainTopic,
-  adminDeleteTheoryMainTopic,
+  adminGetTheoryTopics,
+  adminCreateTheoryTopic,
+  adminUpdateTheoryTopic,
+  adminDeleteTheoryTopic,
 } from '../../api/api'
 
 const emptyForm = {
@@ -19,7 +19,7 @@ export default function AdminTheory() {
   const navigate = useNavigate()
 
   const [courses, setCourses] = useState([])
-  const [mainTopics, setMainTopics] = useState([])
+  const [topics,  setTopics]  = useState([])
   const [form,    setForm]    = useState(emptyForm)
   const [editingId, setEditingId] = useState(null)
   const [error,   setError]   = useState('')
@@ -29,12 +29,12 @@ export default function AdminTheory() {
 
   async function loadData() {
     try {
-      const [cRes, mRes] = await Promise.all([
+      const [cRes, tRes] = await Promise.all([
         adminGetCourses(),
-        adminGetTheoryMainTopics(),
+        adminGetTheoryTopics(),
       ])
       setCourses(cRes.data)
-      setMainTopics(mRes.data)
+      setTopics(tRes.data)
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Could not load data'))
     }
@@ -44,13 +44,13 @@ export default function AdminTheory() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  function startEdit(mainTopic) {
-    setEditingId(mainTopic.id)
+  function startEdit(topic) {
+    setEditingId(topic.id)
     setForm({
-      course:    mainTopic.course,
-      title:     mainTopic.title,
-      ordering:  mainTopic.ordering,
-      is_active: mainTopic.is_active,
+      course:    topic.course,
+      title:     topic.title,
+      ordering:  topic.ordering,
+      is_active: topic.is_active,
     })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -68,9 +68,9 @@ export default function AdminTheory() {
     try {
       const payload = { ...form, ordering: Number(form.ordering) }
       if (editingId) {
-        await adminUpdateTheoryMainTopic(editingId, payload)
+        await adminUpdateTheoryTopic(editingId, payload)
       } else {
-        await adminCreateTheoryMainTopic(payload)
+        await adminCreateTheoryTopic(payload)
       }
       setForm(emptyForm)
       setEditingId(null)
@@ -83,9 +83,9 @@ export default function AdminTheory() {
   }
 
   async function remove(id) {
-    if (!confirm('Delete this main topic, along with all its sub-topics and sections?')) return
+    if (!confirm('Delete this theory topic and all its sections?')) return
     try {
-      await adminDeleteTheoryMainTopic(id)
+      await adminDeleteTheoryTopic(id)
       if (editingId === id) cancelEdit()
       await loadData()
     } catch (err) {
@@ -93,7 +93,7 @@ export default function AdminTheory() {
     }
   }
 
-  // Group main topics by course for display
+  // Group topics by course for display
   const courseMap = Object.fromEntries(courses.map(c => [c.id, c.title]))
 
   return (
@@ -108,7 +108,7 @@ export default function AdminTheory() {
           <div style={s.titleRow}>
             <div>
               <p style={s.eyebrow}>Admin · Theory</p>
-              <h1 style={s.h1}>Theory Main Topics</h1>
+              <h1 style={s.h1}>Theory Topics</h1>
             </div>
             <BackBtn onClick={() => navigate('/admin/dashboard')} />
           </div>
@@ -119,7 +119,7 @@ export default function AdminTheory() {
           <form onSubmit={handleSubmit} style={s.formCard}>
             <SectionTitle
               icon="📖"
-              title={editingId ? 'Edit Main Topic' : 'Create Main Topic'}
+              title={editingId ? 'Edit Theory Topic' : 'Create Theory Topic'}
             />
 
             <div style={s.grid2}>
@@ -137,12 +137,12 @@ export default function AdminTheory() {
                 </select>
               </FormField>
 
-              <FormField label="Main Topic Title">
+              <FormField label="Topic Title">
                 <input
                   style={s.input}
                   value={form.title}
                   onChange={e => set('title', e.target.value)}
-                  placeholder="e.g. Topic 1: Cell Structure"
+                  placeholder="e.g. Atomic Structure"
                   required
                 />
               </FormField>
@@ -161,12 +161,12 @@ export default function AdminTheory() {
             <div style={s.checkRow}>
               <input
                 type="checkbox"
-                id="theory_main_topic_active"
+                id="theory_topic_active"
                 checked={form.is_active}
                 onChange={e => set('is_active', e.target.checked)}
                 style={{ accentColor: '#0E7490', width: 15, height: 15 }}
               />
-              <label htmlFor="theory_main_topic_active" style={s.checkLabel}>
+              <label htmlFor="theory_topic_active" style={s.checkLabel}>
                 Active (visible to students)
               </label>
             </div>
@@ -179,7 +179,7 @@ export default function AdminTheory() {
                 onMouseEnter={e => { if (!saving) e.currentTarget.style.opacity = '0.88' }}
                 onMouseLeave={e => e.currentTarget.style.opacity = '1'}
               >
-                {saving ? 'Saving…' : editingId ? '✓ Update Main Topic' : '+ Create Main Topic'}
+                {saving ? 'Saving…' : editingId ? '✓ Update Topic' : '+ Create Topic'}
               </button>
 
               {editingId && (
@@ -196,17 +196,17 @@ export default function AdminTheory() {
             </div>
           </form>
 
-          {/* ── Main topics list ── */}
+          {/* ── Topics list ── */}
           <section style={s.listCard}>
-            <SectionTitle icon="📋" title={`All Main Topics (${mainTopics.length})`} />
+            <SectionTitle icon="📋" title={`All Theory Topics (${topics.length})`} />
 
-            {mainTopics.length === 0 ? (
-              <Empty text="No main topics created yet." />
+            {topics.length === 0 ? (
+              <Empty text="No theory topics created yet." />
             ) : (
               <div style={s.cardList}>
-                {mainTopics.map(mainTopic => (
+                {topics.map(topic => (
                   <div
-                    key={mainTopic.id}
+                    key={topic.id}
                     style={s.topicRow}
                     onMouseEnter={e => e.currentTarget.style.borderColor = '#A5F3FC'}
                     onMouseLeave={e => e.currentTarget.style.borderColor = '#E8F5E9'}
@@ -216,21 +216,21 @@ export default function AdminTheory() {
 
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <h3 style={s.rowTitle}>{mainTopic.title}</h3>
+                      <h3 style={s.rowTitle}>{topic.title}</h3>
                       <p style={s.rowMeta}>
                         <span style={s.courseTag}>
-                          {mainTopic.courseTitle || courseMap[mainTopic.course] || 'Course'}
+                          {topic.courseTitle || courseMap[topic.course] || 'Course'}
                         </span>
                         <Dot />
-                        <span>📚 {mainTopic.subtopicCount ?? 0} sub-topics</span>
+                        <span>📄 {topic.sectionCount ?? 0} sections</span>
                         <Dot />
                         <span style={{
                           ...s.statusPill,
-                          background: mainTopic.is_active ? '#DCFCE7' : '#F1F5F9',
-                          color:      mainTopic.is_active ? '#166534' : '#64748B',
-                          border:     `1px solid ${mainTopic.is_active ? '#BBF7D0' : '#E2E8F0'}`,
+                          background: topic.is_active ? '#DCFCE7' : '#F1F5F9',
+                          color:      topic.is_active ? '#166534' : '#64748B',
+                          border:     `1px solid ${topic.is_active ? '#BBF7D0' : '#E2E8F0'}`,
                         }}>
-                          {mainTopic.is_active ? 'Active' : 'Hidden'}
+                          {topic.is_active ? 'Active' : 'Hidden'}
                         </span>
                       </p>
                     </div>
@@ -238,15 +238,15 @@ export default function AdminTheory() {
                     {/* Actions */}
                     <div style={s.actionGroup}>
                       <button
-                        onClick={() => navigate(`/admin/theory/${mainTopic.id}/topics`)}
+                        onClick={() => navigate(`/admin/theory/${topic.id}/sections`)}
                         style={s.btnPrimary}
                         onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
                         onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                       >
-                        + Sub-topics
+                        + Sections
                       </button>
                       <button
-                        onClick={() => startEdit(mainTopic)}
+                        onClick={() => startEdit(topic)}
                         style={s.editBtn}
                         onMouseEnter={e => { e.currentTarget.style.background = '#ECFEFF'; e.currentTarget.style.color = '#0E7490' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#06B6D4' }}
@@ -254,7 +254,7 @@ export default function AdminTheory() {
                         Edit
                       </button>
                       <button
-                        onClick={() => remove(mainTopic.id)}
+                        onClick={() => remove(topic.id)}
                         style={s.deleteBtn}
                         onMouseEnter={e => { e.currentTarget.style.background = '#FEE2E2'; e.currentTarget.style.color = '#991B1B' }}
                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#EF4444' }}
