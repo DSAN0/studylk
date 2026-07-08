@@ -430,9 +430,17 @@ export const adminDeleteTopicQuestion = id =>
     headers: adminAuthHeader(),
   })
 
-// Student theory
-export const getSubjectTopics = courseId =>
-  api.get(`/students/courses/${courseId}/theory/topics/`, {
+// Student theory — Main Topics (Topic 1, 2, 3…) for a course
+// Expected response: { subject: { id, title, icon }, mainTopics: [{ id, title, ordering, subtopicCount }] }
+export const getTheoryMainTopics = courseId =>
+  api.get(`/students/courses/${courseId}/theory/main-topics/`, {
+    headers: studentAuthHeader(),
+  })
+
+// Student theory — Sub-topics (1.1, 1.2, 1.3…) within one main topic
+// Expected response: { mainTopic: { id, title, courseId }, topics: [{ id, title, ordering }] }
+export const getTheorySubtopics = mainTopicId =>
+  api.get(`/students/theory/main-topics/${mainTopicId}/topics/`, {
     headers: studentAuthHeader(),
   })
 
@@ -441,9 +449,36 @@ export const getTopicTheorySections = topicId =>
     headers: studentAuthHeader(),
   })
 
-// Admin theory topics
-export const adminGetTheoryTopics = () =>
+// Admin theory — Main Topics (Topic 1, 2, 3…)
+export const adminGetTheoryMainTopics = () =>
+  api.get('/admin/theory-main-topics/', {
+    headers: adminAuthHeader(),
+  })
+
+export const adminGetTheoryMainTopic = id =>
+  api.get(`/admin/theory-main-topics/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminCreateTheoryMainTopic = data =>
+  api.post('/admin/theory-main-topics/', data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminUpdateTheoryMainTopic = (id, data) =>
+  api.put(`/admin/theory-main-topics/${id}/`, data, {
+    headers: adminAuthHeader(),
+  })
+
+export const adminDeleteTheoryMainTopic = id =>
+  api.delete(`/admin/theory-main-topics/${id}/`, {
+    headers: adminAuthHeader(),
+  })
+
+// Admin theory — Sub-topics (1.1, 1.2, 1.3…) within one main topic
+export const adminGetTheoryTopics = mainTopicId =>
   api.get('/admin/theory-topics/', {
+    params: { main_topic: mainTopicId },
     headers: adminAuthHeader(),
   })
 
