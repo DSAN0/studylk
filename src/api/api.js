@@ -1,9 +1,16 @@
 import axios from 'axios'
 
-const api = axios.create({
+/*const api = axios.create({
   baseURL: 'https://web-production-eb900.up.railway.app/api',
   timeout: 30000,   // increased from 10000 → email APIs can take a moment
 })
+*/  
+// For local development, use the local backend URL
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api',
+  timeout: 30000,
+})
+
 
 let isRefreshing = false
 let failedQueue = []

@@ -25,6 +25,10 @@ import TopicQuestions from './pages/TopicQuestions'
 import TheoryViewer from './pages/TheoryViewer'
 import PastPapers    from './pages/PastPapers'
 import PastPaperView from './pages/PastPaperView'
+import ExplorePastPapers  from './pages/ExplorePastPapers'
+import ExploreModelPapers from './pages/ExploreModelPapers'
+import ExploreSchoolPapers from './pages/ExploreSchoolPapers'
+import ExploreNotes        from './pages/ExploreNotes'
 
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
@@ -119,6 +123,12 @@ export default function App() {
             path="/my-courses/:courseId/past-papers/:paperId"
             element={<PastPaperView />}
           />
+
+          {/* Explore pages */}
+          <Route path="/explore/past-papers"   element={<ExplorePastPapers />} />
+          <Route path="/explore/model-papers"  element={<ExploreModelPapers />} />
+          <Route path="/explore/school-papers" element={<ExploreSchoolPapers />} />
+          <Route path="/explore/notes"         element={<ExploreNotes />} />
 
           {/* Admin Auth */}
           <Route path="/admin/login" element={<AdminLogin />} />

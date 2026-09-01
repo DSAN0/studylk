@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [exploreOpen, setExploreOpen] = useState(false)
+  const [mobileExploreOpen, setMobileExploreOpen] = useState(false)
   const [student, setStudent] = useState(null)
+  const exploreCloseTimer = useRef(null)
+
+  const openExplore  = () => { clearTimeout(exploreCloseTimer.current); setExploreOpen(true) }
+  const closeExplore = () => { exploreCloseTimer.current = setTimeout(() => setExploreOpen(false), 150) }
 
   const { buildWhatsAppLink } = useApp()
   const location = useLocation()
@@ -19,6 +25,8 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false)
+    setExploreOpen(false)
+    setMobileExploreOpen(false)
     const saved = localStorage.getItem('studentUser')
     setStudent(saved ? JSON.parse(saved) : null)
   }, [location])
@@ -36,6 +44,109 @@ export default function Navbar() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+        /* ── Explore dropdown ── */
+        .explore-wrapper {
+          position: relative;
+        }
+        .explore-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.9rem;
+          font-weight: 600;
+          padding: 7px 14px;
+          border-radius: 50px;
+          color: #5A7A5A;
+          background: none;
+          border: none;
+          cursor: pointer;
+          transition: color 0.18s, background 0.18s;
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          white-space: nowrap;
+        }
+        .explore-trigger:hover,
+        .explore-trigger.open {
+          color: #2E7D32;
+          background: #E8F5E9;
+        }
+        .explore-chevron {
+          width: 14px; height: 14px;
+          transition: transform 0.22s;
+          flex-shrink: 0;
+        }
+        .explore-trigger.open .explore-chevron {
+          transform: rotate(180deg);
+        }
+
+        .explore-dropdown {
+          position: absolute;
+          top: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          width: 580px;
+          background: white;
+          border-radius: 20px;
+          border: 1.5px solid #C8E6C9;
+          box-shadow: 0 16px 56px rgba(46,125,50,0.14), 0 2px 10px rgba(0,0,0,0.06);
+          padding: 24px;
+          z-index: 100;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+          animation: dropFadeIn 0.2s ease;
+        }
+        @keyframes dropFadeIn {
+          from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .explore-dropdown::before {
+          content: '';
+          position: absolute;
+          top: -7px;
+          left: 50%;
+          transform: translateX(-50%);
+          border-left: 7px solid transparent;
+          border-right: 7px solid transparent;
+          border-bottom: 7px solid white;
+          filter: drop-shadow(0 -2px 2px rgba(46,125,50,0.08));
+        }
+
+        .explore-item {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          text-decoration: none;
+          color: #1A3A1A;
+          border: 1.5px solid transparent;
+          transition: background 0.18s, border-color 0.18s, transform 0.18s;
+        }
+        .explore-item:hover {
+          background: #F1F8E9;
+          border-color: #A5D6A7;
+          transform: translateX(4px);
+        }
+        .explore-item-icon {
+          font-size: 1.6rem;
+          width: 44px; height: 44px;
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+        }
+        .explore-item-label {
+          font-size: 0.92rem;
+          font-weight: 700;
+          color: #1A3A1A;
+          margin-bottom: 2px;
+        }
+        .explore-item-desc {
+          font-size: 0.78rem;
+          color: #6A8A6A;
+          font-weight: 500;
+        }
 
         .navbar-root {
           position: fixed;
@@ -250,6 +361,53 @@ export default function Navbar() {
             <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
             <Link to="/streams" className={`nav-link ${isActive('/streams') ? 'active' : ''}`}>Browse</Link>
 
+            {/* Explore dropdown */}
+            <div
+              className="explore-wrapper"
+              onMouseEnter={openExplore}
+              onMouseLeave={closeExplore}
+            >
+              <button className={`explore-trigger ${exploreOpen ? 'open' : ''}`}>
+                Explore
+                <svg className="explore-chevron" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {exploreOpen && (
+                <div className="explore-dropdown">
+                  <Link to="/explore/past-papers" className="explore-item">
+                    <div className="explore-item-icon" style={{ background: '#E8F5E9' }}>📄</div>
+                    <div>
+                      <div className="explore-item-label">Past Papers</div>
+                      <div className="explore-item-desc">A/L & O/L official past papers</div>
+                    </div>
+                  </Link>
+                  <Link to="/explore/model-papers" className="explore-item">
+                    <div className="explore-item-icon" style={{ background: '#E0F7FA' }}>📝</div>
+                    <div>
+                      <div className="explore-item-label">Model Papers</div>
+                      <div className="explore-item-desc">Expert-crafted practice papers</div>
+                    </div>
+                  </Link>
+                  <Link to="/explore/school-papers" className="explore-item">
+                    <div className="explore-item-icon" style={{ background: '#EDE7F6' }}>🏫</div>
+                    <div>
+                      <div className="explore-item-label">School Papers</div>
+                      <div className="explore-item-desc">Term papers from top schools</div>
+                    </div>
+                  </Link>
+                  <Link to="/explore/notes" className="explore-item">
+                    <div className="explore-item-icon" style={{ background: '#FFF8E1' }}>📒</div>
+                    <div>
+                      <div className="explore-item-label">Notes</div>
+                      <div className="explore-item-desc">Summaries & study guides</div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {student ? (
               <>
                 <Link to="/my-courses" className={`nav-link ${isActive('/my-courses') ? 'active' : ''}`}>
@@ -292,6 +450,24 @@ export default function Navbar() {
         <div className="mobile-menu">
           <Link to="/" className={`mobile-link ${isActive('/') ? 'active' : ''}`}>🏠 Home</Link>
           <Link to="/streams" className={`mobile-link ${isActive('/streams') ? 'active' : ''}`}>📚 Browse</Link>
+
+          {/* Mobile Explore */}
+          <button
+            className="mobile-link"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+            onClick={() => setMobileExploreOpen(v => !v)}
+          >
+            <span>🔍 Explore</span>
+            <span style={{ fontSize: '0.75rem', transition: 'transform 0.2s', transform: mobileExploreOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+          </button>
+          {mobileExploreOpen && (
+            <div style={{ paddingLeft: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <Link to="/explore/past-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>📄 Past Papers</Link>
+              <Link to="/explore/model-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>📝 Model Papers</Link>
+              <Link to="/explore/school-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>🏫 School Papers</Link>
+              <Link to="/explore/notes" className="mobile-link" style={{ fontSize: '0.88rem' }}>📒 Notes</Link>
+            </div>
+          )}
 
           {student ? (
             <>
