@@ -30,6 +30,12 @@ import ExploreModelPapers from './pages/ExploreModelPapers'
 import ExploreSchoolPapers from './pages/ExploreSchoolPapers'
 import ExploreNotes        from './pages/ExploreNotes'
 
+import OLPapers     from './pages/pastpapers/OLPapers'
+import ALStreams    from './pages/pastpapers/ALStreams'
+import ALSubjects   from './pages/pastpapers/ALSubjects'
+import Grade5Papers from './pages/pastpapers/Grade5Papers'
+import PaperViewer  from './pages/pastpapers/PaperViewer'
+
 import ProtectedAdminRoute from './admin/components/ProtectedAdminRoute'
 import AdminLogin from './admin/pages/AdminLogin'
 import AdminDashboard from './admin/pages/AdminDashboard'
@@ -45,6 +51,8 @@ import AdminTheory from './admin/pages/AdminTheory'
 import AdminTheorySections from './admin/pages/AdminTheorySections'
 import AdminPastPapers from './admin/pages/AdminPastPapers'
 import AdminPastPaperQuestions from './admin/pages/AdminPastPaperQuestions'
+import AdminExplorePapers from './admin/pages/AdminExplorePapers'
+import AdminExplorePaperMCQ from './admin/pages/AdminExplorePaperMCQ'
 
 export default function App() {
   return (
@@ -129,6 +137,19 @@ export default function App() {
           <Route path="/explore/model-papers"  element={<ExploreModelPapers />} />
           <Route path="/explore/school-papers" element={<ExploreSchoolPapers />} />
           <Route path="/explore/notes"         element={<ExploreNotes />} />
+
+          {/* Past Papers — O/L */}
+          <Route path="/explore/past-papers/ol"          element={<OLPapers />} />
+          <Route path="/explore/past-papers/ol/:subject" element={<PaperViewer grade="OL" />} />
+
+          {/* Past Papers — A/L */}
+          <Route path="/explore/past-papers/al"                   element={<ALStreams />} />
+          <Route path="/explore/past-papers/al/:stream"           element={<ALSubjects />} />
+          <Route path="/explore/past-papers/al/:stream/:subject"  element={<PaperViewer grade="AL" />} />
+
+          {/* Past Papers — Grade 5 Scholarship */}
+          <Route path="/explore/past-papers/grade5"          element={<Grade5Papers />} />
+          <Route path="/explore/past-papers/grade5/:subject" element={<PaperViewer grade="Grade5" />} />
 
           {/* Admin Auth */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -265,6 +286,24 @@ export default function App() {
             element={
               <ProtectedAdminRoute>
                 <AdminPastPaperQuestions />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/explore-papers"
+            element={
+              <ProtectedAdminRoute>
+                <AdminExplorePapers />
+              </ProtectedAdminRoute>
+            }
+          />
+
+          <Route
+            path="/admin/explore-papers/:paperId/mcq"
+            element={
+              <ProtectedAdminRoute>
+                <AdminExplorePaperMCQ />
               </ProtectedAdminRoute>
             }
           />

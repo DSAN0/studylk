@@ -641,4 +641,129 @@ export const adminDeletePastPaperEssaySubQuestion = id =>
     headers: adminAuthHeader(),
   })
 
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPLORE PAST PAPERS — public, no-login archive (separate from the
+// enrolled-course PAST PAPERS section above)
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Grades: O/L, A/L, Grade 5, etc.
+// Response: [{ id, name, full_name, hasStreams, subjectCount }, ...]
+export const getExploreGrades = () =>
+  api.get('/explore/grades/')
+
+// Streams under a grade (currently only A/L has streams)
+// Response: [{ id, grade, name, icon, desc, subjectCount }, ...]
+export const getExploreStreams = gradeId =>
+  api.get(`/explore/grades/${gradeId}/streams/`)
+
+// Subjects — pass streamId for A/L, omit it for O/L & Grade 5
+// Response: [{ id, name, icon, grade, stream, paperCount }, ...]
+export const getExploreSubjects = (gradeId, streamId = null) =>
+  streamId
+    ? api.get(`/explore/grades/${gradeId}/streams/${streamId}/subjects/`)
+    : api.get(`/explore/grades/${gradeId}/subjects/`)
+
+// Papers for a subject — pass streamId for A/L, omit it for O/L & Grade 5.
+// filters: { year, medium, part } — all optional
+// Response: [{ id, year, medium, part, pdfUrl, hasMcq }, ...]
+export const getExplorePapers = (gradeId, subjectSlug, streamId = null, filters = {}) => {
+  const path = streamId
+    ? `/explore/grades/${gradeId}/streams/${streamId}/subjects/${subjectSlug}/papers/`
+    : `/explore/grades/${gradeId}/subjects/${subjectSlug}/papers/`
+
+  const params = {}
+  if (filters.year && filters.year !== 'All') params.year = filters.year
+  if (filters.medium && filters.medium !== 'All') params.medium = filters.medium
+  if (filters.part && filters.part !== 'All') params.part = filters.part
+
+  return api.get(path, { params })
+}
+
+// Single paper, including its MCQ practice questions (if any)
+// Response: { id, year, medium, part, pdfUrl, hasMcq, mcq_questions: [...] }
+export const getExplorePaperDetail = paperId =>
+  api.get(`/explore/papers/${paperId}/`)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPLORE PAST PAPERS — ADMIN
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Grades
+export const adminGetExploreGrades = () =>
+  api.get('/admin/explore/grades/', { headers: adminAuthHeader() })
+
+export const adminCreateExploreGrade = data =>
+  api.post('/admin/explore/grades/', data, { headers: adminAuthHeader() })
+
+export const adminUpdateExploreGrade = (id, data) =>
+  api.put(`/admin/explore/grades/${id}/`, data, { headers: adminAuthHeader() })
+
+export const adminDeleteExploreGrade = id =>
+  api.delete(`/admin/explore/grades/${id}/`, { headers: adminAuthHeader() })
+
+// Streams
+export const adminGetExploreStreams = () =>
+  api.get('/admin/explore/streams/', { headers: adminAuthHeader() })
+
+export const adminCreateExploreStream = data =>
+  api.post('/admin/explore/streams/', data, { headers: adminAuthHeader() })
+
+export const adminUpdateExploreStream = (id, data) =>
+  api.put(`/admin/explore/streams/${id}/`, data, { headers: adminAuthHeader() })
+
+export const adminDeleteExploreStream = id =>
+  api.delete(`/admin/explore/streams/${id}/`, { headers: adminAuthHeader() })
+
+// Subjects
+export const adminGetExploreSubjects = () =>
+  api.get('/admin/explore/subjects/', { headers: adminAuthHeader() })
+
+export const adminCreateExploreSubject = data =>
+  api.post('/admin/explore/subjects/', data, { headers: adminAuthHeader() })
+
+export const adminUpdateExploreSubject = (id, data) =>
+  api.put(`/admin/explore/subjects/${id}/`, data, { headers: adminAuthHeader() })
+
+export const adminDeleteExploreSubject = id =>
+  api.delete(`/admin/explore/subjects/${id}/`, { headers: adminAuthHeader() })
+
+// Papers (multipart — these carry a real PDF file upload)
+export const adminGetExplorePapers = () =>
+  api.get('/admin/explore/papers/', { headers: adminAuthHeader() })
+
+export const adminGetExplorePaper = id =>
+  api.get(`/admin/explore/papers/${id}/`, { headers: adminAuthHeader() })
+
+export const adminCreateExplorePaper = data =>
+  api.post('/admin/explore/papers/', data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminUpdateExplorePaper = (id, data) =>
+  api.put(`/admin/explore/papers/${id}/`, data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminDeleteExplorePaper = id =>
+  api.delete(`/admin/explore/papers/${id}/`, { headers: adminAuthHeader() })
+
+// Paper — MCQ practice questions
+export const adminGetExplorePaperMCQQuestions = paperId =>
+  api.get(`/admin/explore/papers/${paperId}/mcq-questions/`, { headers: adminAuthHeader() })
+
+export const adminCreateExplorePaperMCQQuestion = (paperId, data) =>
+  api.post(`/admin/explore/papers/${paperId}/mcq-questions/`, data, { headers: adminAuthHeader() })
+
+export const adminUpdateExplorePaperMCQQuestion = (id, data) =>
+  api.put(`/admin/explore/mcq-questions/${id}/`, data, { headers: adminAuthHeader() })
+
+export const adminDeleteExplorePaperMCQQuestion = id =>
+  api.delete(`/admin/explore/mcq-questions/${id}/`, { headers: adminAuthHeader() })
+
 export default api
