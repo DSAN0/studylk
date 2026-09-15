@@ -29,6 +29,10 @@ import ExplorePastPapers  from './pages/ExplorePastPapers'
 import ExploreModelPapers from './pages/ExploreModelPapers'
 import ExploreSchoolPapers from './pages/ExploreSchoolPapers'
 import ExploreNotes        from './pages/ExploreNotes'
+import ExploreHub          from './pages/ExploreHub'
+import ExploreALStreams    from './pages/ExploreALStreams'
+import ExploreSubjects     from './pages/ExploreSubjects'
+import ExploreContentType  from './pages/ExploreContentType'
 
 import OLPapers     from './pages/pastpapers/OLPapers'
 import ALStreams    from './pages/pastpapers/ALStreams'
@@ -132,24 +136,57 @@ export default function App() {
             element={<PastPaperView />}
           />
 
-          {/* Explore pages */}
+          {/* ── New Explore flow ── */}
+          {/* Step 1: Grade select */}
+          <Route path="/explore" element={<ExploreHub />} />
+
+          {/* Step 2a: O/L subject select */}
+          <Route path="/explore/ol" element={<ExploreSubjects grade="ol" />} />
+
+          {/* Step 2b: Grade 5 subject select */}
+          <Route path="/explore/grade5" element={<ExploreSubjects grade="grade5" />} />
+
+          {/* Step 2c: A/L stream select */}
+          <Route path="/explore/al" element={<ExploreALStreams />} />
+
+          {/* Step 3: A/L subject select (after stream) */}
+          <Route path="/explore/al/:stream" element={<ExploreSubjects grade="al" />} />
+
+          {/* Step 4 (final): Content type chooser */}
+          <Route path="/explore/ol/:subjectId/choose"              element={<ExploreContentType grade="ol" />} />
+          <Route path="/explore/grade5/:subjectId/choose"          element={<ExploreContentType grade="grade5" />} />
+          <Route path="/explore/al/:stream/:subjectId/choose"      element={<ExploreContentType grade="al" />} />
+
+          {/* Legacy / Direct Explore Hubs */}
           <Route path="/explore/past-papers"   element={<ExplorePastPapers />} />
           <Route path="/explore/model-papers"  element={<ExploreModelPapers />} />
           <Route path="/explore/school-papers" element={<ExploreSchoolPapers />} />
           <Route path="/explore/notes"         element={<ExploreNotes />} />
 
-          {/* Past Papers — O/L */}
-          <Route path="/explore/past-papers/ol"          element={<OLPapers />} />
-          <Route path="/explore/past-papers/ol/:subject" element={<PaperViewer grade="OL" />} />
-
-          {/* Past Papers — A/L */}
+          {/* Past Papers */}
+          <Route path="/explore/past-papers/ol"                   element={<OLPapers />} />
+          <Route path="/explore/past-papers/ol/:subject"          element={<PaperViewer grade="OL" />} />
           <Route path="/explore/past-papers/al"                   element={<ALStreams />} />
           <Route path="/explore/past-papers/al/:stream"           element={<ALSubjects />} />
           <Route path="/explore/past-papers/al/:stream/:subject"  element={<PaperViewer grade="AL" />} />
+          <Route path="/explore/past-papers/grade5"               element={<Grade5Papers />} />
+          <Route path="/explore/past-papers/grade5/:subject"      element={<PaperViewer grade="Grade5" />} />
 
-          {/* Past Papers — Grade 5 Scholarship */}
-          <Route path="/explore/past-papers/grade5"          element={<Grade5Papers />} />
-          <Route path="/explore/past-papers/grade5/:subject" element={<PaperViewer grade="Grade5" />} />
+          {/* Model Papers */}
+          <Route path="/explore/model-papers/ol/:subject"          element={<ExploreModelPapers grade="OL" />} />
+          <Route path="/explore/model-papers/al/:stream/:subject"  element={<ExploreModelPapers grade="AL" />} />
+          <Route path="/explore/model-papers/grade5/:subject"      element={<ExploreModelPapers grade="Grade5" />} />
+
+          {/* School Papers */}
+          <Route path="/explore/school-papers/ol/:subject"          element={<ExploreSchoolPapers grade="OL" />} />
+          <Route path="/explore/school-papers/al/:stream/:subject"  element={<ExploreSchoolPapers grade="AL" />} />
+          <Route path="/explore/school-papers/grade5/:subject"      element={<ExploreSchoolPapers grade="Grade5" />} />
+
+          {/* Notes */}
+          <Route path="/explore/notes/ol/:subject"          element={<ExploreNotes grade="OL" />} />
+          <Route path="/explore/notes/al/:stream/:subject"  element={<ExploreNotes grade="AL" />} />
+          <Route path="/explore/notes/grade5/:subject"      element={<ExploreNotes grade="Grade5" />} />
+
 
           {/* Admin Auth */}
           <Route path="/admin/login" element={<AdminLogin />} />

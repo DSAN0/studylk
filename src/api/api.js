@@ -684,8 +684,52 @@ export const getExplorePapers = (gradeId, subjectSlug, streamId = null, filters 
 export const getExplorePaperDetail = paperId =>
   api.get(`/explore/papers/${paperId}/`)
 
+// Model Papers for a subject
+// filters: { year, medium, difficulty }
+export const getExploreModelPapers = (gradeId, subjectSlug, streamId = null, filters = {}) => {
+  const path = streamId
+    ? `/explore/grades/${gradeId}/streams/${streamId}/subjects/${subjectSlug}/model-papers/`
+    : `/explore/grades/${gradeId}/subjects/${subjectSlug}/model-papers/`
+
+  const params = {}
+  if (filters.year && filters.year !== 'All') params.year = filters.year
+  if (filters.medium && filters.medium !== 'All') params.medium = filters.medium
+  if (filters.difficulty && filters.difficulty !== 'All') params.difficulty = filters.difficulty
+
+  return api.get(path, { params })
+}
+
+// School Papers for a subject
+// filters: { year, medium, term, school }
+export const getExploreSchoolPapers = (gradeId, subjectSlug, streamId = null, filters = {}) => {
+  const path = streamId
+    ? `/explore/grades/${gradeId}/streams/${streamId}/subjects/${subjectSlug}/school-papers/`
+    : `/explore/grades/${gradeId}/subjects/${subjectSlug}/school-papers/`
+
+  const params = {}
+  if (filters.year && filters.year !== 'All') params.year = filters.year
+  if (filters.medium && filters.medium !== 'All') params.medium = filters.medium
+  if (filters.term && filters.term !== 'All') params.term = filters.term
+  if (filters.school && filters.school !== 'All') params.school = filters.school
+
+  return api.get(path, { params })
+}
+
+// Notes for a subject
+// filters: { note_type }
+export const getExploreNotes = (gradeId, subjectSlug, streamId = null, filters = {}) => {
+  const path = streamId
+    ? `/explore/grades/${gradeId}/streams/${streamId}/subjects/${subjectSlug}/notes/`
+    : `/explore/grades/${gradeId}/subjects/${subjectSlug}/notes/`
+
+  const params = {}
+  if (filters.note_type && filters.note_type !== 'All') params.note_type = filters.note_type
+
+  return api.get(path, { params })
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
-// EXPLORE PAST PAPERS — ADMIN
+// EXPLORE RESOURCES — ADMIN
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Grades
@@ -727,7 +771,7 @@ export const adminUpdateExploreSubject = (id, data) =>
 export const adminDeleteExploreSubject = id =>
   api.delete(`/admin/explore/subjects/${id}/`, { headers: adminAuthHeader() })
 
-// Papers (multipart — these carry a real PDF file upload)
+// Past Papers (multipart)
 export const adminGetExplorePapers = () =>
   api.get('/admin/explore/papers/', { headers: adminAuthHeader() })
 
@@ -765,5 +809,74 @@ export const adminUpdateExplorePaperMCQQuestion = (id, data) =>
 
 export const adminDeleteExplorePaperMCQQuestion = id =>
   api.delete(`/admin/explore/mcq-questions/${id}/`, { headers: adminAuthHeader() })
+
+// Model Papers (multipart)
+export const adminGetExploreModelPapers = () =>
+  api.get('/admin/explore/model-papers/', { headers: adminAuthHeader() })
+
+export const adminCreateModelPaper = data =>
+  api.post('/admin/explore/model-papers/', data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminUpdateModelPaper = (id, data) =>
+  api.put(`/admin/explore/model-papers/${id}/`, data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminDeleteModelPaper = id =>
+  api.delete(`/admin/explore/model-papers/${id}/`, { headers: adminAuthHeader() })
+
+// School Papers (multipart)
+export const adminGetExploreSchoolPapers = () =>
+  api.get('/admin/explore/school-papers/', { headers: adminAuthHeader() })
+
+export const adminCreateSchoolPaper = data =>
+  api.post('/admin/explore/school-papers/', data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminUpdateSchoolPaper = (id, data) =>
+  api.put(`/admin/explore/school-papers/${id}/`, data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminDeleteSchoolPaper = id =>
+  api.delete(`/admin/explore/school-papers/${id}/`, { headers: adminAuthHeader() })
+
+// Notes (multipart)
+export const adminGetExploreNotes = () =>
+  api.get('/admin/explore/notes/', { headers: adminAuthHeader() })
+
+export const adminCreateNote = data =>
+  api.post('/admin/explore/notes/', data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminUpdateNote = (id, data) =>
+  api.put(`/admin/explore/notes/${id}/`, data, {
+    headers: {
+      ...adminAuthHeader(),
+      'Content-Type': 'multipart/form-data',
+    },
+  })
+
+export const adminDeleteNote = id =>
+  api.delete(`/admin/explore/notes/${id}/`, { headers: adminAuthHeader() })
 
 export default api

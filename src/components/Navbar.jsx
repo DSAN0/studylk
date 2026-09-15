@@ -1,17 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [exploreOpen, setExploreOpen] = useState(false)
-  const [mobileExploreOpen, setMobileExploreOpen] = useState(false)
   const [student, setStudent] = useState(null)
-  const exploreCloseTimer = useRef(null)
-
-  const openExplore  = () => { clearTimeout(exploreCloseTimer.current); setExploreOpen(true) }
-  const closeExplore = () => { exploreCloseTimer.current = setTimeout(() => setExploreOpen(false), 150) }
 
   const { buildWhatsAppLink } = useApp()
   const location = useLocation()
@@ -25,8 +19,6 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false)
-    setExploreOpen(false)
-    setMobileExploreOpen(false)
     const saved = localStorage.getItem('studentUser')
     setStudent(saved ? JSON.parse(saved) : null)
   }, [location])
@@ -361,52 +353,13 @@ export default function Navbar() {
             <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
             <Link to="/streams" className={`nav-link ${isActive('/streams') ? 'active' : ''}`}>Browse</Link>
 
-            {/* Explore dropdown */}
-            <div
-              className="explore-wrapper"
-              onMouseEnter={openExplore}
-              onMouseLeave={closeExplore}
+            {/* Explore link */}
+            <Link
+              to="/explore"
+              className={`nav-link ${location.pathname.startsWith('/explore') ? 'active' : ''}`}
             >
-              <button className={`explore-trigger ${exploreOpen ? 'open' : ''}`}>
-                Explore
-                <svg className="explore-chevron" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-
-              {exploreOpen && (
-                <div className="explore-dropdown">
-                  <Link to="/explore/past-papers" className="explore-item">
-                    <div className="explore-item-icon" style={{ background: '#E8F5E9' }}>📄</div>
-                    <div>
-                      <div className="explore-item-label">Past Papers</div>
-                      <div className="explore-item-desc">A/L & O/L official past papers</div>
-                    </div>
-                  </Link>
-                  <Link to="/explore/model-papers" className="explore-item">
-                    <div className="explore-item-icon" style={{ background: '#E0F7FA' }}>📝</div>
-                    <div>
-                      <div className="explore-item-label">Model Papers</div>
-                      <div className="explore-item-desc">Expert-crafted practice papers</div>
-                    </div>
-                  </Link>
-                  <Link to="/explore/school-papers" className="explore-item">
-                    <div className="explore-item-icon" style={{ background: '#EDE7F6' }}>🏫</div>
-                    <div>
-                      <div className="explore-item-label">School Papers</div>
-                      <div className="explore-item-desc">Term papers from top schools</div>
-                    </div>
-                  </Link>
-                  <Link to="/explore/notes" className="explore-item">
-                    <div className="explore-item-icon" style={{ background: '#FFF8E1' }}>📒</div>
-                    <div>
-                      <div className="explore-item-label">Notes</div>
-                      <div className="explore-item-desc">Summaries & study guides</div>
-                    </div>
-                  </Link>
-                </div>
-              )}
-            </div>
+              Explore
+            </Link>
 
             {student ? (
               <>
@@ -452,22 +405,12 @@ export default function Navbar() {
           <Link to="/streams" className={`mobile-link ${isActive('/streams') ? 'active' : ''}`}>📚 Browse</Link>
 
           {/* Mobile Explore */}
-          <button
-            className="mobile-link"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-            onClick={() => setMobileExploreOpen(v => !v)}
+          <Link
+            to="/explore"
+            className={`mobile-link ${location.pathname.startsWith('/explore') ? 'active' : ''}`}
           >
-            <span>🔍 Explore</span>
-            <span style={{ fontSize: '0.75rem', transition: 'transform 0.2s', transform: mobileExploreOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
-          </button>
-          {mobileExploreOpen && (
-            <div style={{ paddingLeft: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <Link to="/explore/past-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>📄 Past Papers</Link>
-              <Link to="/explore/model-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>📝 Model Papers</Link>
-              <Link to="/explore/school-papers" className="mobile-link" style={{ fontSize: '0.88rem' }}>🏫 School Papers</Link>
-              <Link to="/explore/notes" className="mobile-link" style={{ fontSize: '0.88rem' }}>📒 Notes</Link>
-            </div>
-          )}
+            🔍 Explore
+          </Link>
 
           {student ? (
             <>
