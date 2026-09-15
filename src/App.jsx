@@ -13,6 +13,7 @@ import Register from './pages/Register'
 import Login from './pages/Login'
 import VerifyEmail from './pages/VerifyEmail'
 import MyCourses from './pages/MyCourses'
+import MyAccount from './pages/MyAccount'
 import EnrollCourse from './pages/EnrollCourse'
 import CourseOverview from './pages/CourseOverview'
 import CourseMaterials from './pages/CourseMaterials'
@@ -80,8 +81,9 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
 
-          {/* Student Area */}
-          <Route path="/my-courses" element={<MyCourses />} />
+          {/* Student Account & Learning Hub */}
+          <Route path="/my-account" element={<MyAccount />} />
+          <Route path="/my-courses" element={<MyAccount defaultTab="courses" />} />
 
           <Route
             path="/my-courses/:courseId/overview"

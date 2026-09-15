@@ -171,6 +171,11 @@ export const studentProfile = () =>
     headers: studentAuthHeader(),
   })
 
+export const updateStudentProfile = data =>
+  api.patch('/students/profile/', data, {
+    headers: studentAuthHeader(),
+  })
+
 export const studentMyCourses = () =>
   api.get('/students/my-courses/', {
     headers: studentAuthHeader(),

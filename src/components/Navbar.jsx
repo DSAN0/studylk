@@ -363,8 +363,20 @@ export default function Navbar() {
 
             {student ? (
               <>
-                <Link to="/my-courses" className={`nav-link ${isActive('/my-courses') ? 'active' : ''}`}>
-                  My Courses
+                <Link
+                  to="/my-account"
+                  className={`nav-link ${location.pathname.startsWith('/my-account') || location.pathname === '/my-courses' ? 'active' : ''}`}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: '#2E7D32', color: 'white',
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.72rem', fontWeight: 800
+                  }}>
+                    {(student.full_name || student.name || student.username || 'S').charAt(0).toUpperCase()}
+                  </span>
+                  My Account
                 </Link>
                 <button onClick={logout} className="nav-link">Logout</button>
               </>
@@ -414,8 +426,11 @@ export default function Navbar() {
 
           {student ? (
             <>
-              <Link to="/my-courses" className={`mobile-link ${isActive('/my-courses') ? 'active' : ''}`}>
-                🎓 My Courses
+              <Link
+                to="/my-account"
+                className={`mobile-link ${location.pathname.startsWith('/my-account') || location.pathname === '/my-courses' ? 'active' : ''}`}
+              >
+                👤 My Account
               </Link>
               <div className="mobile-divider" />
               <button onClick={logout} className="mobile-link">👋 Logout</button>

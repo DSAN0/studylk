@@ -18,7 +18,7 @@ export default function Login() {
       localStorage.setItem('studentAccessToken', res.data.access)
       localStorage.setItem('studentRefreshToken', res.data.refresh)
       localStorage.setItem('studentUser', JSON.stringify(res.data.student))
-      navigate('/my-courses')
+      navigate('/my-account')
     } catch (err) {
       const data = err.response?.data
 

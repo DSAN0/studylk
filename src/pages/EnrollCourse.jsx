@@ -51,7 +51,7 @@ export default function EnrollCourse() {
         res.data.whatsappUrl ||
         `https://wa.me/${COMPANY_ACCOUNT.whatsapp}?text=Hi%20StudyLK%2C%20I%20confirmed%20my%20course%20enrollment.%20I%20will%20send%20payment%20receipt.`
       window.open(whatsappUrl, '_blank')
-      navigate('/my-courses')
+      navigate('/my-account?tab=courses')
     } catch (err) {
       setError(JSON.stringify(err.response?.data || 'Enrollment failed'))
     } finally {
