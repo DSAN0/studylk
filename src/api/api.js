@@ -166,6 +166,10 @@ export const studentResendVerification = data =>
 export const studentLogin = data =>
   api.post('/students/login/', data)
 
+export const studentGoogleAuth = credential =>
+  api.post('/students/google-auth/', { credential })
+
+
 export const studentProfile = () =>
   api.get('/students/profile/', {
     headers: studentAuthHeader(),

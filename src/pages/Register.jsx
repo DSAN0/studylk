@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { studentRegister } from '../api/api'
+import GoogleAuthButton from '../components/GoogleAuthButton'
+
 
 const SECTIONS = [
   {
@@ -245,6 +247,24 @@ export default function Register() {
           font-weight: 600;
         }
 
+        .reg-divider {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin: 24px 0 22px;
+          color: #8CA68C;
+          font-size: 0.82rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .reg-divider::before, .reg-divider::after {
+          content: '';
+          flex: 1;
+          height: 1.5px;
+          background: #D1E9D1;
+        }
+
         .reg-submit {
           width: 100%;
           border: none;
@@ -259,6 +279,7 @@ export default function Register() {
           box-shadow: 0 10px 30px rgba(76,175,80,0.25);
           font-family: inherit;
         }
+
 
         .reg-submit:hover {
           transform: translateY(-2px);
@@ -316,6 +337,19 @@ export default function Register() {
             papers, daily questions and more.
           </p>
 
+          {/* Google Sign-Up */}
+          <div style={{ maxWidth: '360px', margin: '0 auto 10px' }}>
+            <GoogleAuthButton
+              text="signup_with"
+              label="Sign up with Google"
+              onError={err => setError(err)}
+            />
+          </div>
+
+          <div className="reg-divider">
+            or register with email
+          </div>
+
           {error && (
             <div className="reg-error">
               {error}
@@ -323,6 +357,7 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit}>
+
 
             {SECTIONS.map(section => (
               <div className="reg-section" key={section.title}>

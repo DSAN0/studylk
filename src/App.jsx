@@ -58,12 +58,16 @@ import AdminPastPapers from './admin/pages/AdminPastPapers'
 import AdminPastPaperQuestions from './admin/pages/AdminPastPaperQuestions'
 import AdminExplorePapers from './admin/pages/AdminExplorePapers'
 import AdminExplorePaperMCQ from './admin/pages/AdminExplorePaperMCQ'
+import { GoogleOAuthProvider } from '@react-oauth/google'
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 export default function App() {
-  return (
+  const content = (
     <AppProvider>
       <BrowserRouter>
         <Navbar />
+
 
         <Routes>
           {/* Public */}
@@ -353,4 +357,10 @@ export default function App() {
       </BrowserRouter>
     </AppProvider>
   )
+
+  if (GOOGLE_CLIENT_ID) {
+    return <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>{content}</GoogleOAuthProvider>
+  }
+
+  return content
 }

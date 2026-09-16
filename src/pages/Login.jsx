@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { studentLogin } from '../api/api'
+import GoogleAuthButton from '../components/GoogleAuthButton'
 
 export default function Login() {
+
   const navigate = useNavigate()
   const [form, setForm]     = useState({ email: '', password: '' })
   const [error, setError]   = useState('')
@@ -199,6 +201,17 @@ export default function Login() {
           <h1 className="login-title">Welcome back!</h1>
           <p className="login-sub">Login to enrol in courses and access your study materials.</p>
 
+          {/* Google Sign-in */}
+          <div style={{ marginBottom: '20px' }}>
+            <GoogleAuthButton
+              text="signin_with"
+              label="Sign in with Google"
+              onError={err => setError(err)}
+            />
+          </div>
+
+          <div className="login-divider">or sign in with email</div>
+
           {/* Error */}
           {error && (
             <div className="login-error">
@@ -208,6 +221,7 @@ export default function Login() {
 
           {/* Email */}
           <div className="login-field">
+
             <label>Email Address</label>
             <div className="login-input-wrap">
               <input
