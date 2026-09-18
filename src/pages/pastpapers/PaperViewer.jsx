@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Link, useParams, useLocation } from 'react-router-dom'
-import { getExplorePapers } from '../../api/api'
+import { getExplorePapers, getExplorePaperDetail } from '../../api/api'
+import MathText from '../../components/MathText'
 
 /* ── Static label maps ──────────────────────────────────── */
 const SUBJECT_LABELS = {
@@ -75,12 +76,20 @@ export default function PaperViewer({ grade = 'AL' }) {
   const [selMedium, setSelMedium] = useState('All')
   const [selYear,   setSelYear]   = useState('All')
   const [selPart,   setSelPart]   = useState('All')
+  const [filterMcqOnly, setFilterMcqOnly] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState('newest')
   const [showMobileFilters, setShowMobileFilters] = useState(false)
 
   // Preview Modal state
   const [previewPaper, setPreviewPaper] = useState(null)
+
+  // MCQ Practice Modal state
+  const [mcqPaper, setMcqPaper] = useState(null)
+  const [mcqLoading, setMcqLoading] = useState(false)
+  const [mcqQuestions, setMcqQuestions] = useState([])
+  const [userAnswers, setUserAnswers] = useState({})
+  const [showExplanations, setShowExplanations] = useState({})
 
   // Real papers, fetched from the backend for this grade/stream/subject
   const [allPapers, setAllPapers] = useState([])
@@ -102,6 +111,32 @@ export default function PaperViewer({ grade = 'AL' }) {
     return () => { cancelled = true }
   }, [gradeId, subjectKey, stream, grade])
 
+  async function openMcqPractice(paper) {
+    setMcqPaper(paper)
+    setMcqLoading(true)
+    setMcqQuestions([])
+    setUserAnswers({})
+    setShowExplanations({})
+    try {
+      const res = await getExplorePaperDetail(paper.id)
+      setMcqQuestions(res.data.mcq_questions || [])
+    } catch (err) {
+      console.error('Failed to load MCQ questions', err)
+    } finally {
+      setMcqLoading(false)
+    }
+  }
+
+  function handleSelectOption(qId, choice) {
+    setUserAnswers(prev => ({ ...prev, [qId]: choice }))
+    setShowExplanations(prev => ({ ...prev, [qId]: true }))
+  }
+
+  function resetQuiz() {
+    setUserAnswers({})
+    setShowExplanations({})
+  }
+
   // Filter option lists, derived from the papers actually returned
   const YEARS = useMemo(
     () => [...new Set(allPapers.map(p => p.year))].sort((a, b) => b - a),
@@ -118,6 +153,7 @@ export default function PaperViewer({ grade = 'AL' }) {
 
   const filtered = useMemo(() => {
     let result = allPapers.filter(p => {
+      if (filterMcqOnly && !p.hasMcq) return false
       if (selMedium !== 'All' && p.medium !== selMedium) return false
       if (selYear   !== 'All' && p.year   !== Number(selYear)) return false
       if (selPart   !== 'All' && p.part   !== selPart) return false
@@ -130,12 +166,12 @@ export default function PaperViewer({ grade = 'AL' }) {
     })
 
     return result.sort((a, b) => sortOrder === 'newest' ? b.year - a.year : a.year - b.year)
-  }, [allPapers, selMedium, selYear, selPart, searchQuery, sortOrder])
+  }, [allPapers, filterMcqOnly, selMedium, selYear, selPart, searchQuery, sortOrder])
 
-  const hasFilters = selMedium !== 'All' || selYear !== 'All' || selPart !== 'All' || searchQuery !== ''
+  const hasFilters = filterMcqOnly || selMedium !== 'All' || selYear !== 'All' || selPart !== 'All' || searchQuery !== ''
 
   function clearAll() {
-    setSelMedium('All'); setSelYear('All'); setSelPart('All'); setSearchQuery('')
+    setFilterMcqOnly(false); setSelMedium('All'); setSelYear('All'); setSelPart('All'); setSearchQuery('')
   }
 
   /* Breadcrumb links */
@@ -459,6 +495,27 @@ export default function PaperViewer({ grade = 'AL' }) {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
 
+            {/* Practice Mode Filter */}
+            <div className="pv-filter-group">
+              <div className="pv-filter-label">Practice Mode</div>
+              <div className="pv-filter-pills">
+                <button
+                  className={`pv-pill${!filterMcqOnly ? ' active' : ''}`}
+                  style={!filterMcqOnly ? { background: heroColor, borderColor: heroColor } : {}}
+                  onClick={() => setFilterMcqOnly(false)}
+                >
+                  All Papers
+                </button>
+                <button
+                  className={`pv-pill${filterMcqOnly ? ' active' : ''}`}
+                  style={filterMcqOnly ? { background: '#16a34a', borderColor: '#16a34a' } : {}}
+                  onClick={() => setFilterMcqOnly(true)}
+                >
+                  🎯 MCQ Quiz Available
+                </button>
+              </div>
+            </div>
+
             {/* Medium Filter */}
             <div className="pv-filter-group">
               <div className="pv-filter-label">Medium</div>
@@ -537,6 +594,12 @@ export default function PaperViewer({ grade = 'AL' }) {
             {/* Active Filter Tags */}
             {hasFilters && (
               <div className="pv-active-filters">
+                {filterMcqOnly && (
+                  <div className="pv-af-tag" style={{ background: '#dcfce7', color: '#166534' }}>
+                    🎯 MCQ Quiz Only
+                    <span className="pv-af-x" onClick={() => setFilterMcqOnly(false)}>×</span>
+                  </div>
+                )}
                 {selMedium !== 'All' && (
                   <div className="pv-af-tag">
                     {MEDIUM_ICONS[selMedium]} {selMedium}
@@ -610,16 +673,37 @@ export default function PaperViewer({ grade = 'AL' }) {
                         <span className="pv-tag" style={PART_COLOR[paper.part] || { bg: '#f1f5f9', color: '#475569' }}>
                           📄 {paper.part}
                         </span>
+                        {paper.hasMcq && (
+                          <span className="pv-tag" style={{ background: '#dcfce7', color: '#15803d', border: '1px solid #86efac', fontWeight: 800 }}>
+                            ✨ MCQ Quiz
+                          </span>
+                        )}
                       </div>
                     </div>
 
-                    <div className="pv-paper-actions">
+                    <div className="pv-paper-actions" style={{ flexWrap: 'wrap' }}>
+                      {paper.hasMcq && (
+                        <button
+                          className="pv-btn"
+                          style={{
+                            background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                            color: 'white',
+                            fontWeight: 800,
+                            boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+                            flex: '1 0 100%',
+                            marginBottom: 4,
+                          }}
+                          onClick={() => openMcqPractice(paper)}
+                        >
+                          🎯 Practice MCQs
+                        </button>
+                      )}
                       <button
                         className="pv-btn pv-btn-view"
                         style={{ background: heroColor }}
                         onClick={() => setPreviewPaper(paper)}
                       >
-                        👁 Preview
+                        👁 PDF
                       </button>
                       <a 
                         href={paper.pdfUrl} 
@@ -645,13 +729,253 @@ export default function PaperViewer({ grade = 'AL' }) {
                   <strong style={{ color: '#1e293b' }}>{subjectName} — {previewPaper.year}</strong>
                   <span style={{ fontSize: '0.8rem', color: '#64748b', marginLeft: 8 }}>({previewPaper.medium} Medium / {previewPaper.part})</span>
                 </div>
-                <button className="pv-modal-close" onClick={() => setPreviewPaper(null)}>✕</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {previewPaper.hasMcq && (
+                    <button
+                      className="pv-btn"
+                      style={{
+                        background: 'linear-gradient(135deg, #16a34a, #15803d)',
+                        color: 'white',
+                        padding: '6px 14px',
+                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                      }}
+                      onClick={() => {
+                        const p = previewPaper
+                        setPreviewPaper(null)
+                        openMcqPractice(p)
+                      }}
+                    >
+                      🎯 Start MCQ Quiz
+                    </button>
+                  )}
+                  <button className="pv-modal-close" onClick={() => setPreviewPaper(null)}>✕</button>
+                </div>
               </div>
               <iframe
                 src={previewPaper.pdfUrl}
                 title="Paper Preview"
                 style={{ width: '100%', height: '100%', border: 'none' }}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Interactive MCQ Practice Modal */}
+        {mcqPaper && (
+          <div className="pv-modal-overlay" onClick={() => setMcqPaper(null)}>
+            <div className="pv-modal" style={{ maxWidth: 860, height: '90vh' }} onClick={e => e.stopPropagation()}>
+              <div className="pv-modal-header" style={{ background: '#f8fafc', padding: '16px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{
+                    width: 38, height: 38, borderRadius: 10,
+                    background: 'linear-gradient(135deg,#16a34a,#15803d)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'white', fontSize: '1.2rem', flexShrink: 0
+                  }}>
+                    🎯
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>
+                      {subjectName} — {mcqPaper.year} MCQ Practice
+                    </h3>
+                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>
+                      {mcqPaper.medium} Medium · {mcqPaper.part} · {mcqQuestions.length} Questions
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {Object.keys(userAnswers).length > 0 && (
+                    <button
+                      onClick={resetQuiz}
+                      style={{
+                        background: '#f1f5f9', border: '1px solid #cbd5e1',
+                        borderRadius: 8, padding: '6px 12px', fontSize: '0.78rem',
+                        fontWeight: 700, color: '#475569', cursor: 'pointer'
+                      }}
+                    >
+                      🔄 Reset
+                    </button>
+                  )}
+                  <button className="pv-modal-close" onClick={() => setMcqPaper(null)}>✕</button>
+                </div>
+              </div>
+
+              {/* Quiz progress / stats bar */}
+              {!mcqLoading && mcqQuestions.length > 0 && (
+                <div style={{
+                  padding: '12px 24px', background: '#f0fdf4',
+                  borderBottom: '1px solid #bbf7d0', display: 'flex',
+                  alignItems: 'center', justifyContent: 'space-between',
+                  flexWrap: 'wrap', gap: 10
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166534' }}>
+                      Answered: {Object.keys(userAnswers).length} / {mcqQuestions.length}
+                    </span>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>
+                      Correct: {mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length}
+                    </span>
+                  </div>
+                  <div style={{
+                    background: '#dcfce7', border: '1px solid #86efac',
+                    borderRadius: 50, padding: '3px 12px', fontSize: '0.78rem',
+                    fontWeight: 800, color: '#166534'
+                  }}>
+                    Score: {Object.keys(userAnswers).length > 0
+                      ? Math.round((mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length / Object.keys(userAnswers).length) * 100)
+                      : 0}%
+                  </div>
+                </div>
+              )}
+
+              {/* Questions List Body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '24px', background: '#fafafa' }}>
+                {mcqLoading ? (
+                  <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                    <div style={{
+                      width: 36, height: 36, border: '3px solid #bbf7d0',
+                      borderTopColor: '#16a34a', borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite', margin: '0 auto 12px'
+                    }} />
+                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading questions…</p>
+                  </div>
+                ) : mcqQuestions.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
+                    <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: 8 }}>📋</span>
+                    <h4 style={{ margin: '0 0 4px', color: '#1e293b' }}>No MCQ questions found</h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem' }}>Questions have not been published for this paper yet.</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    {mcqQuestions
+                      .slice()
+                      .sort((a, b) => (a.ordering || 0) - (b.ordering || 0))
+                      .map((q, idx) => {
+                        const answered = userAnswers[q.id]
+                        const isCorrect = answered === q.correct_answer
+                        const choices = [
+                          { letter: 'A', text: q.option_a },
+                          { letter: 'B', text: q.option_b },
+                          { letter: 'C', text: q.option_c },
+                          { letter: 'D', text: q.option_d },
+                        ]
+                        if (q.option_e) choices.push({ letter: 'E', text: q.option_e })
+
+                        return (
+                          <div
+                            key={q.id}
+                            style={{
+                              background: 'white', borderRadius: 16,
+                              border: '1.5px solid #e2e8f0', padding: 20,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                              <span style={{
+                                width: 32, height: 32, borderRadius: 8,
+                                background: answered ? (isCorrect ? '#22c55e' : '#ef4444') : '#1e293b',
+                                color: 'white', fontWeight: 800, fontSize: '0.82rem',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0, marginTop: 2
+                              }}>
+                                {idx + 1}
+                              </span>
+                              <div style={{ flex: 1, fontSize: '0.94rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}>
+                                <MathText text={q.question_text} />
+                              </div>
+                            </div>
+
+                            {/* Options */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 12 }}>
+                              {choices.map(c => {
+                                const isSelected = answered === c.letter
+                                const isRightChoice = c.letter === q.correct_answer
+                                let bg = '#f8fafc'
+                                let border = '1.5px solid #e2e8f0'
+                                let color = '#334155'
+                                let badgeBg = '#e2e8f0'
+                                let badgeColor = '#475569'
+
+                                if (answered) {
+                                  if (isSelected) {
+                                    if (isCorrect) {
+                                      bg = '#f0fdf4'
+                                      border = '1.5px solid #22c55e'
+                                      color = '#15803d'
+                                      badgeBg = '#22c55e'
+                                      badgeColor = 'white'
+                                    } else {
+                                      bg = '#fef2f2'
+                                      border = '1.5px solid #ef4444'
+                                      color = '#b91c1c'
+                                      badgeBg = '#ef4444'
+                                      badgeColor = 'white'
+                                    }
+                                  } else if (isRightChoice) {
+                                    bg = '#f0fdf4'
+                                    border = '1.5px dashed #22c55e'
+                                    color = '#15803d'
+                                    badgeBg = '#86efac'
+                                    badgeColor = '#166534'
+                                  }
+                                }
+
+                                return (
+                                  <button
+                                    key={c.letter}
+                                    type="button"
+                                    onClick={() => handleSelectOption(q.id, c.letter)}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: 10,
+                                      padding: '10px 14px', borderRadius: 12,
+                                      background: bg, border: border, color: color,
+                                      cursor: 'pointer', textAlign: 'left',
+                                      transition: 'all 0.18s', outline: 'none'
+                                    }}
+                                  >
+                                    <span style={{
+                                      width: 26, height: 26, borderRadius: 6,
+                                      background: badgeBg, color: badgeColor,
+                                      fontWeight: 800, fontSize: '0.75rem',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      flexShrink: 0
+                                    }}>
+                                      {c.letter}
+                                    </span>
+                                    <span style={{ fontSize: '0.86rem', fontWeight: 500, flex: 1 }}>
+                                      <MathText text={c.text} />
+                                    </span>
+                                    {answered && isSelected && (
+                                      <span>{isCorrect ? '✓' : '✕'}</span>
+                                    )}
+                                    {answered && !isSelected && isRightChoice && (
+                                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a' }}>Correct</span>
+                                    )}
+                                  </button>
+                                )
+                              })}
+                            </div>
+
+                            {/* Explanation */}
+                            {answered && q.explanation && (
+                              <div style={{
+                                background: '#eff6ff', border: '1px solid #bfdbfe',
+                                borderRadius: 10, padding: '10px 14px',
+                                fontSize: '0.84rem', color: '#1e40af', lineHeight: 1.5,
+                                marginTop: 8
+                              }}>
+                                <strong style={{ color: '#1d4ed8' }}>💡 Explanation: </strong>
+                                <MathText text={q.explanation} />
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

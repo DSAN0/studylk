@@ -287,7 +287,7 @@ export default function Home() {
                 letterSpacing: '0.01em',
               }}>
                 <span className="live-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: '#4CAF50', display: 'inline-block' }} />
-                🇱🇰 &nbsp; Made for Sri Lankan A/L Students
+                🇱🇰 &nbsp; Made for Sri Lankan Students
               </div>
 
               {/* Headline */}
@@ -316,7 +316,7 @@ export default function Home() {
                   WebkitTextFillColor: 'transparent',
                   backgroundClip: 'text',
                 }}>
-                  A/L success
+                  Academic success
                 </span>
               </h1>
 
@@ -325,14 +325,13 @@ export default function Home() {
                 fontSize: '1.08rem', color: '#4A6A4A', lineHeight: 1.7,
                 marginBottom: 36, maxWidth: 480,
               }}>
-                Premium notes, tutorials &amp; past papers for all four streams —
-                curated by top students and teachers across Sri Lanka.
+                Learn, practice, and prepare with quality study resources made for students across Sri Lanka.               
               </p>
 
               {/* CTAs */}
               <div className="animate-hero-delay2" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 52 }}>
                 <button className="home-btn-primary" onClick={() => navigate('/streams')}>
-                  Browse materials →
+                  Browse Courses →
                 </button>
                 <a
                   href={buildWhatsAppLink('Hi! I need help finding study materials for my A/L subjects.')}
@@ -379,7 +378,7 @@ export default function Home() {
       <section style={{ padding: '88px 24px', background: '#FFFFFF' }}>
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <SectionHeader
-            eyebrow="All streams"
+            eyebrow="All Courses"
             title="What are you studying?"
             desc="Choose your A/L stream to find exactly the materials you need."
           />
@@ -427,7 +426,7 @@ export default function Home() {
         <div style={{ maxWidth: 1160, margin: '0 auto' }}>
           <SectionHeader
             eyebrow="Simple process"
-            title="How it works"
+            title="How to select course"
             desc="Getting your study materials is quick, easy, and done right on WhatsApp."
           />
 
@@ -587,7 +586,7 @@ export default function Home() {
             color: '#1A3A1A', marginBottom: 14,
             lineHeight: 1.2,
           }}>
-            Ready to level up your A/L results?
+            Ready to level up your results?
           </h2>
           <p style={{
             fontSize: '1rem', color: '#4A6A4A', lineHeight: 1.7, marginBottom: 36,
@@ -629,7 +628,7 @@ export default function Home() {
             fontSize: '0.88rem', color: '#7A9A7A', lineHeight: 1.7,
             maxWidth: 360, margin: '0 auto 24px',
           }}>
-            Premium A/L study materials for Sri Lankan students.
+            Premium study materials for Sri Lankan students.
             <br />Delivered via WhatsApp — fast, easy and affordable.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, justifyContent: 'center', marginBottom: 24 }}>

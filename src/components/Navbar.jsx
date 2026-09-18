@@ -351,7 +351,7 @@ export default function Navbar() {
           {/* Desktop links */}
           <div className="navbar-links">
             <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>Home</Link>
-            <Link to="/streams" className={`nav-link ${isActive('/streams') ? 'active' : ''}`}>Browse</Link>
+            <Link to="/streams" className={`nav-link ${isActive('/streams') ? 'active' : ''}`}>Browse Courses</Link>
 
             {/* Explore link */}
             <Link

@@ -12,7 +12,7 @@ const CHOICES = ['A', 'B', 'C', 'D', 'E']
 
 const emptyQ = {
   question_text: '',
-  choice_a: '', choice_b: '', choice_c: '', choice_d: '', choice_e: '',
+  option_a: '', option_b: '', option_c: '', option_d: '', option_e: '',
   correct_answer: 'A',
   explanation: '',
   ordering: 0,
@@ -57,11 +57,11 @@ export default function AdminExplorePaperMCQ() {
     setEditingId(q.id)
     setForm({
       question_text:  q.question_text,
-      choice_a:       q.choice_a,
-      choice_b:       q.choice_b,
-      choice_c:       q.choice_c,
-      choice_d:       q.choice_d,
-      choice_e:       q.choice_e || '',
+      option_a:       q.option_a,
+      option_b:       q.option_b,
+      option_c:       q.option_c,
+      option_d:       q.option_d,
+      option_e:       q.option_e || '',
       correct_answer: q.correct_answer,
       explanation:    q.explanation || '',
       ordering:       q.ordering,
@@ -202,8 +202,14 @@ export default function AdminExplorePaperMCQ() {
                     </div>
                     <input
                       style={{...s.input, paddingLeft:44, marginBottom:0}}
-                      value={form[`choice_${ch.toLowerCase()}`]}
-                      onChange={e => setF(`choice_${ch.toLowerCase()}`, e.target.value)}
+                      value={form[`option_${ch.toLowerCase()}`]}
+                      onChange={e => {
+                        const val = e.target.value
+                        setF(`option_${ch.toLowerCase()}`, val)
+                        if (ch === 'E' && !val.trim() && form.correct_answer === 'E') {
+                          setF('correct_answer', 'A')
+                        }
+                      }}
                       placeholder={`Answer choice ${ch}${ch === 'E' ? ' (optional)' : ''}`}
                       required={ch !== 'E'}
                     />
@@ -215,16 +221,23 @@ export default function AdminExplorePaperMCQ() {
             <div style={s.correctRow}>
               <span style={s.fieldLabel}>Correct Answer:</span>
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                {CHOICES.map(ch => (
-                  <button
-                    key={ch}
-                    type="button"
-                    style={form.correct_answer === ch ? s.correctBtnActive : s.correctBtn}
-                    onClick={() => setF('correct_answer', ch)}
-                  >
-                    {ch}
-                  </button>
-                ))}
+                {CHOICES.map(ch => {
+                  const isEDisabled = ch === 'E' && !form.option_e?.trim()
+                  return (
+                    <button
+                      key={ch}
+                      type="button"
+                      disabled={isEDisabled}
+                      style={{
+                        ...(form.correct_answer === ch ? s.correctBtnActive : s.correctBtn),
+                        ...(isEDisabled ? { opacity: 0.4, cursor: 'not-allowed' } : {}),
+                      }}
+                      onClick={() => setF('correct_answer', ch)}
+                    >
+                      {ch}
+                    </button>
+                  )
+                })}
               </div>
             </div>
 
@@ -301,7 +314,7 @@ export default function AdminExplorePaperMCQ() {
                     </div>
 
                     <div style={s.choicesList}>
-                      {CHOICES.filter(ch => q[`choice_${ch.toLowerCase()}`]).map(ch => (
+                      {CHOICES.filter(ch => q[`option_${ch.toLowerCase()}`]).map(ch => (
                         <div
                           key={ch}
                           style={{
@@ -318,7 +331,7 @@ export default function AdminExplorePaperMCQ() {
                             {ch}
                             {q.correct_answer === ch && ' ✓'}
                           </span>
-                          <span style={s.choiceText}>{q[`choice_${ch.toLowerCase()}`]}</span>
+                          <span style={s.choiceText}>{q[`option_${ch.toLowerCase()}`]}</span>
                         </div>
                       ))}
                     </div>
