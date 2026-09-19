@@ -1,143 +1,149 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  BookOpen,
-  User,
-  Calendar,
-  Laptop,
-  Rocket,
-  CheckCircle2,
-  Clock,
-  XCircle,
-  FileText,
-  HelpCircle,
-  FolderOpen,
-} from 'lucide-react'
-import { Card, CardHeader, CardContent, CardFooter } from '../../../../components/ui/card'
-import { Button } from '../../../../components/ui/button'
-import { Badge } from '../../../../components/ui/badge'
+
+const STATUS = {
+  approved: { bg: '#F0FDF4', border: '#BBF7D0', color: '#16A34A', icon: '✅', label: 'Approved' },
+  pending:  { bg: '#FEF9E7', border: '#FDE68A', color: '#D97706', icon: '⏳', label: 'Pending Verification' },
+  rejected: { bg: '#FEF2F2', border: '#FECACA', color: '#DC2626', icon: '❌', label: 'Rejected' },
+}
 
 export default function CourseCard({ enrollment }) {
   const navigate = useNavigate()
-  const course = enrollment.course || {}
-  const status = enrollment.status || 'pending'
-
+  const course    = enrollment.course || {}
+  const status    = enrollment.status || 'pending'
+  const st        = STATUS[status] || STATUS.pending
   const isApproved = status === 'approved'
-  const isPending = status === 'pending'
-  const isRejected = status === 'rejected'
+  const isPending  = status === 'pending'
 
   return (
-    <Card className="flex flex-col justify-between transition-all hover:border-emerald-300 hover:shadow-lg dark:hover:border-emerald-800">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between gap-2">
-          {isApproved && (
-            <Badge variant="success">
-              <CheckCircle2 className="h-3.5 w-3.5" /> Approved
-            </Badge>
-          )}
-          {isPending && (
-            <Badge variant="warning">
-              <Clock className="h-3.5 w-3.5" /> Pending Verification
-            </Badge>
-          )}
-          {isRejected && (
-            <Badge variant="danger">
-              <XCircle className="h-3.5 w-3.5" /> Rejected
-            </Badge>
-          )}
+    <>
+      <style>{`
+        .cc-card { animation: fadeUp 0.35s ease both; }
+        .cc-card:hover { transform: translateY(-4px) !important; box-shadow: 0 12px 36px rgba(76,175,80,0.1) !important; }
+        .cc-primary-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(76,175,80,0.38) !important; }
+        .cc-mini-btn:hover { background: #E8F5E9 !important; border-color: #A5D6A7 !important; color: #2E7D32 !important; }
+      `}</style>
 
+      <div
+        className="cc-card"
+        style={{
+          background: 'white', border: '1.5px solid #E8F5E9',
+          borderRadius: 22, padding: 22,
+          boxShadow: '0 2px 14px rgba(0,0,0,0.04)',
+          display: 'flex', flexDirection: 'column',
+          transition: 'transform 0.2s, box-shadow 0.2s',
+        }}
+      >
+        {/* Status badge + price */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 12px', borderRadius: 50, fontSize: '0.72rem', fontWeight: 700,
+            background: st.bg, border: `1.5px solid ${st.border}`, color: st.color,
+          }}>
+            {st.icon} {st.label}
+          </span>
           {course.price && (
-            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-extrabold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
-              {course.price}
-            </span>
+            <span style={{
+              background: '#E8F5E9', borderRadius: 50, padding: '3px 11px',
+              fontSize: '0.75rem', fontWeight: 800, color: '#2E7D32',
+            }}>{course.price}</span>
           )}
         </div>
 
-        <h3 className="mt-3 text-base font-bold leading-snug text-zinc-900 line-clamp-2 dark:text-zinc-100">
+        {/* Title */}
+        <h3 style={{
+          fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+          fontSize: '1.05rem', color: '#1A3A1A',
+          lineHeight: 1.35, marginBottom: 6,
+        }}>
           {course.title}
         </h3>
 
+        {/* Teacher */}
         {course.teacher?.name && (
-          <p className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-            <User className="h-3.5 w-3.5 text-emerald-600" />
-            <span>{course.teacher.name}</span>
+          <p style={{ fontSize: '0.82rem', color: '#7A9A7A', fontWeight: 600, marginBottom: 14 }}>
+            👤 {course.teacher.name}
           </p>
         )}
-      </CardHeader>
 
-      <CardContent className="space-y-2 pb-4 text-xs text-zinc-600 dark:text-zinc-400">
-        {course.schedule && (
-          <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <span className="line-clamp-1">{course.schedule}</span>
-          </div>
-        )}
-        {course.mode && (
-          <div className="flex items-center gap-2">
-            <Laptop className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <span>{course.mode}</span>
-          </div>
-        )}
-        {course.startDate && (
-          <div className="flex items-center gap-2">
-            <Rocket className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
-            <span>Starts: {course.startDate}</span>
-          </div>
-        )}
-      </CardContent>
+        {/* Meta */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: 5,
+          fontSize: '0.8rem', color: '#5A7A5A', marginBottom: 18, flex: 1,
+        }}>
+          {course.schedule  && <span>📅 {course.schedule}</span>}
+          {course.mode      && <span>💻 {course.mode}</span>}
+          {course.startDate && <span>🚀 Starts: {course.startDate}</span>}
+        </div>
 
-      <CardFooter className="flex-col gap-2.5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+        {/* Footer actions */}
         {isApproved ? (
           <>
-            <Button
-              className="w-full font-bold"
+            <button
+              className="cc-primary-btn"
               onClick={() => navigate(`/my-courses/${course.id}/overview`)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                width: '100%', marginBottom: 10,
+                background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+                color: 'white', border: 'none', borderRadius: 50,
+                padding: '10px 0', fontSize: '0.87rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 3px 12px rgba(76,175,80,0.28)',
+                transition: 'transform 0.16s, box-shadow 0.16s',
+              }}
             >
-              <BookOpen className="h-4 w-4" /> Open Course Portal
-            </Button>
+              📖 Open Course Portal
+            </button>
 
-            <div className="grid w-full grid-cols-3 gap-1.5 pt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/my-courses/${course.id}/materials`)}
-                className="h-8 text-[11px] px-1 text-zinc-600 dark:text-zinc-300"
-                title="Course Materials"
-              >
-                <FolderOpen className="h-3 w-3" /> Materials
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/my-courses/${course.id}/daily-questions`)}
-                className="h-8 text-[11px] px-1 text-zinc-600 dark:text-zinc-300"
-                title="Daily Questions"
-              >
-                <HelpCircle className="h-3 w-3" /> Questions
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate(`/my-courses/${course.id}/past-papers`)}
-                className="h-8 text-[11px] px-1 text-zinc-600 dark:text-zinc-300"
-                title="Past Papers"
-              >
-                <FileText className="h-3 w-3" /> Papers
-              </Button>
+            {/* 3-action grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {[
+                { emoji: '📁', label: 'Materials',  path: 'materials' },
+                { emoji: '❓', label: 'Questions',  path: 'daily-questions' },
+                { emoji: '📄', label: 'Papers',     path: 'papers' },
+              ].map(action => (
+                <button
+                  key={action.path}
+                  className="cc-mini-btn"
+                  onClick={() => navigate(`/my-courses/${course.id}/${action.path}`)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    background: 'white', border: '1.5px solid #E8F5E9',
+                    color: '#5A7A5A', borderRadius: 12,
+                    padding: '7px 4px', fontSize: '0.75rem', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    transition: 'background 0.15s, border-color 0.15s, color 0.15s',
+                  }}
+                >
+                  {action.emoji} {action.label}
+                </button>
+              ))}
             </div>
           </>
         ) : isPending ? (
-          <div className="flex w-full items-start gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50/70 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-300">
-            <Clock className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>Your enrollment is awaiting confirmation by admin. Access will be unlocked upon approval.</span>
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 9,
+            background: '#FEF9E7', border: '1.5px solid #FDE68A',
+            borderRadius: 14, padding: '12px 14px',
+            fontSize: '0.82rem', color: '#92400E',
+          }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}>⏳</span>
+            <span>Your enrollment is awaiting admin confirmation. Access will be unlocked upon approval.</span>
           </div>
         ) : (
-          <div className="flex w-full items-start gap-2.5 rounded-xl border border-rose-200/80 bg-rose-50/70 p-3 text-xs text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300">
-            <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
-            <span>Enrollment was rejected. Please contact support via WhatsApp if you need help.</span>
+          <div style={{
+            display: 'flex', alignItems: 'flex-start', gap: 9,
+            background: '#FEF2F2', border: '1.5px solid #FECACA',
+            borderRadius: 14, padding: '12px 14px',
+            fontSize: '0.82rem', color: '#991B1B',
+          }}>
+            <span style={{ flexShrink: 0, marginTop: 1 }}>❌</span>
+            <span>Enrollment was rejected. Please contact support for assistance.</span>
           </div>
         )}
-      </CardFooter>
-    </Card>
+      </div>
+    </>
   )
 }

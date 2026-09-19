@@ -1,16 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, SearchX } from 'lucide-react'
 import CourseCard from './CourseCard'
 import CourseFilters from './CourseFilters'
-import { Card } from '../../../../components/ui/card'
-import { Button } from '../../../../components/ui/button'
 
-export default function MyCoursesSection({
-  enrollments = [],
-  approvedCourses = [],
-  pendingCourses = [],
-}) {
+export default function MyCoursesSection({ enrollments = [], approvedCourses = [], pendingCourses = [] }) {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [courseFilter, setCourseFilter] = useState('all')
@@ -18,8 +11,8 @@ export default function MyCoursesSection({
   const filteredEnrollments = useMemo(() => {
     return enrollments.filter(e => {
       const matchesFilter = courseFilter === 'all' || e.status === courseFilter
-      const courseTitle = e.course?.title?.toLowerCase() || ''
-      const teacherName = e.course?.teacher?.name?.toLowerCase() || ''
+      const courseTitle  = e.course?.title?.toLowerCase() || ''
+      const teacherName  = e.course?.teacher?.name?.toLowerCase() || ''
       const matchesSearch =
         courseTitle.includes(searchQuery.toLowerCase()) ||
         teacherName.includes(searchQuery.toLowerCase())
@@ -28,8 +21,8 @@ export default function MyCoursesSection({
   }, [enrollments, courseFilter, searchQuery])
 
   return (
-    <div className="space-y-6">
-      {/* Controls Bar */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Filters bar */}
       <CourseFilters
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -40,45 +33,71 @@ export default function MyCoursesSection({
         pendingCount={pendingCourses.length}
       />
 
-      {/* Courses Grid or Empty State */}
+      {/* Grid or empty state */}
       {filteredEnrollments.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 text-center">
-          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
-            {enrollments.length === 0 ? (
-              <BookOpen className="h-8 w-8" />
-            ) : (
-              <SearchX className="h-8 w-8" />
-            )}
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', padding: '56px 32px',
+          background: 'white', borderRadius: 22,
+          border: '1.5px solid #E8F5E9',
+          boxShadow: '0 2px 14px rgba(0,0,0,0.04)',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '3rem', marginBottom: 14 }}>
+            {enrollments.length === 0 ? '📭' : '🔍'}
           </div>
-          <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-100">
+          <h3 style={{
+            fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+            fontSize: '1.3rem', color: '#1A3A1A', marginBottom: 8,
+          }}>
             {enrollments.length === 0
               ? "You haven't enrolled in any courses yet"
               : 'No matching courses found'}
           </h3>
-          <p className="mb-6 max-w-sm text-sm text-zinc-500 dark:text-zinc-400">
+          <p style={{
+            color: '#7A9A7A', fontSize: '0.9rem', marginBottom: 24,
+            maxWidth: 380, lineHeight: 1.6,
+          }}>
             {enrollments.length === 0
               ? 'Browse our top-rated Sri Lankan A/L and O/L courses and enroll with your student account.'
-              : 'Try searching with a different keyword or resetting your filter criteria.'}
+              : 'Try searching with a different keyword or resetting your filters.'}
           </p>
 
           {enrollments.length === 0 ? (
-            <Button onClick={() => navigate('/streams')} className="font-bold">
+            <button
+              onClick={() => navigate('/streams')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+                color: 'white', border: 'none', borderRadius: 50,
+                padding: '10px 24px', fontSize: '0.87rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 3px 12px rgba(76,175,80,0.28)',
+              }}
+            >
               📚 Browse Course Catalog
-            </Button>
+            </button>
           ) : (
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchQuery('')
-                setCourseFilter('all')
+            <button
+              onClick={() => { setSearchQuery(''); setCourseFilter('all') }}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                background: 'white', border: '1.5px solid #C8E6C9',
+                color: '#3A5A3A', borderRadius: 50,
+                padding: '10px 24px', fontSize: '0.87rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
               }}
             >
               Reset Filters
-            </Button>
+            </button>
           )}
-        </Card>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+          gap: 18,
+        }}>
           {filteredEnrollments.map(item => (
             <CourseCard key={item.id} enrollment={item} />
           ))}

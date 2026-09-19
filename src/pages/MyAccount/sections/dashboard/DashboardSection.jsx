@@ -1,10 +1,7 @@
 import React from 'react'
-import { Calendar, Timer, StickyNote, Play, ArrowRight, BookOpen } from 'lucide-react'
 import MetricCards from './MetricCards'
 import QuickCoursesWidget from './QuickCoursesWidget'
 import ShortcutsGrid from './ShortcutsGrid'
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card'
-import { Button } from '../../../../components/ui/button'
 
 export default function DashboardSection({
   studentName = 'Student',
@@ -14,52 +11,102 @@ export default function DashboardSection({
   onGoToTab,
 }) {
   const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+    weekday: 'long', month: 'short', day: 'numeric', year: 'numeric',
   })
 
   return (
-    <div className="space-y-6">
-      {/* Top Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-800 via-emerald-700 to-green-900 p-6 text-white shadow-lg md:p-8">
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-200">
-              <Calendar className="h-3.5 w-3.5" />
-              <span>{today}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+      {/* ── Welcome banner ──────────────────────────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%)',
+        borderRadius: 22, padding: '32px 28px',
+        boxShadow: '0 4px 20px rgba(46,125,50,0.3)',
+        position: 'relative', overflow: 'hidden',
+        animation: 'fadeUp 0.4s ease both',
+      }}>
+        {/* Subtle dot overlay */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1.5px, transparent 1.5px)',
+          backgroundSize: '24px 24px',
+        }} />
+
+        <div style={{
+          position: 'relative',
+          display: 'flex', flexWrap: 'wrap',
+          alignItems: 'center', justifyContent: 'space-between', gap: 20,
+        }}>
+          <div>
+            <div style={{
+              fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)',
+              textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              📅 {today}
             </div>
-            <h2 className="text-2xl font-black md:text-3xl">
+            <h2 style={{
+              fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+              fontSize: 'clamp(1.3rem, 2.5vw, 1.8rem)',
+              color: 'white', marginBottom: 8, lineHeight: 1.2,
+            }}>
               Ready to continue your study journey?
             </h2>
-            <p className="max-w-xl text-sm text-emerald-100/90">
-              You currently have <span className="font-bold underline">{approvedCourses.length} active courses</span> with theory guides, practice questions, and past papers ready for you.
+            <p style={{
+              fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)',
+              marginBottom: 20, maxWidth: 480,
+            }}>
+              You have <strong>{approvedCourses.length} active courses</strong> with theory, practice questions, and past papers ready.
             </p>
-            <div className="flex flex-wrap gap-3 pt-2">
-              <Button
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+              <button
                 onClick={() => onGoToTab('courses')}
-                className="bg-white text-emerald-900 hover:bg-emerald-50 hover:text-emerald-950 font-bold"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'white', color: '#1B5E20',
+                  border: 'none', borderRadius: 50, padding: '10px 20px',
+                  fontSize: '0.87rem', fontWeight: 800,
+                  cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  boxShadow: '0 3px 14px rgba(0,0,0,0.15)',
+                  transition: 'transform 0.16s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'none'}
               >
-                <BookOpen className="h-4 w-4" /> Go to My Courses
-              </Button>
-              <Button
-                variant="outline"
+                🎓 Go to My Courses
+              </button>
+              <button
                 onClick={() => onGoToTab('focus')}
-                className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:text-white"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '1.5px solid rgba(255,255,255,0.35)',
+                  color: 'white', borderRadius: 50, padding: '10px 20px',
+                  fontSize: '0.87rem', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
               >
-                <Timer className="h-4 w-4" /> Start Focus Session
-              </Button>
+                ⏱️ Start Focus Session
+              </button>
             </div>
           </div>
 
-          <div className="hidden h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-4xl shadow-inner md:flex">
+          <div style={{
+            width: 88, height: 88, borderRadius: 20, flexShrink: 0,
+            background: 'rgba(255,255,255,0.12)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '2.8rem',
+          }}>
             🎓
           </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
+      {/* ── Metrics ────────────────────────────────────────────────────── */}
       <MetricCards
         enrollmentsCount={enrollments.length}
         approvedCount={approvedCourses.length}
@@ -67,67 +114,88 @@ export default function DashboardSection({
         onGoToTab={onGoToTab}
       />
 
-      {/* Two Column Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left (2 cols): My Courses quick view */}
-        <div className="lg:col-span-2">
-          <QuickCoursesWidget
-            enrollments={enrollments}
-            onGoToCourses={() => onGoToTab('courses')}
-          />
-        </div>
+      {/* ── Two-column grid ─────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+        {/* Left: Quick courses */}
+        <QuickCoursesWidget
+          enrollments={enrollments}
+          onGoToCourses={() => onGoToTab('courses')}
+        />
 
-        {/* Right (1 col): Mini Focus & Mini Notes widgets */}
-        <div className="flex flex-col gap-6">
-          {/* Mini Focus Widget */}
-          <Card className="flex flex-col justify-between">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <Timer className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-base">Focus Zone (Pomodoro)</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-xs text-zinc-500">
-                25 minutes of deep, distraction-free study intervals with structured breaks.
-              </p>
-              <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
-                <span className="text-2xl font-black text-emerald-800">
-                  25:00
-                </span>
-                <Button size="sm" onClick={() => onGoToTab('focus')} className="gap-1 text-xs font-bold">
-                  <Play className="h-3 w-3" /> Launch Timer
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Right: Mini Focus + Mini Notes */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Focus mini-card */}
+          <div style={{
+            background: 'white', border: '1.5px solid #E8F5E9',
+            borderRadius: 22, padding: 22,
+            boxShadow: '0 2px 14px rgba(0,0,0,0.04)',
+          }}>
+            <h4 style={{
+              fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+              fontSize: '0.95rem', color: '#1A3A1A', marginBottom: 8,
+              display: 'flex', alignItems: 'center', gap: 7,
+            }}>⏱️ Focus Zone</h4>
+            <p style={{ fontSize: '0.8rem', color: '#7A9A7A', marginBottom: 14, lineHeight: 1.5 }}>
+              25-minute deep study intervals with structured breaks.
+            </p>
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: '#E8F5E9', borderRadius: 12, padding: '10px 14px',
+              border: '1.5px solid #C8E6C9', marginBottom: 12,
+            }}>
+              <span style={{
+                fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                fontSize: '1.5rem', color: '#2E7D32',
+              }}>25:00</span>
+            </div>
+            <button
+              onClick={() => onGoToTab('focus')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                width: '100%',
+                background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+                color: 'white', border: 'none', borderRadius: 50,
+                padding: '9px 0', fontSize: '0.82rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 3px 10px rgba(76,175,80,0.28)',
+              }}
+            >
+              ▶ Launch Timer
+            </button>
+          </div>
 
-          {/* Mini Scratchpad Widget */}
-          <Card className="flex flex-col justify-between">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <StickyNote className="h-5 w-5 text-emerald-600" />
-                <CardTitle className="text-base">Study Scratchpad</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-xs text-zinc-500">
-                Quickly save formula summaries, important theorem reminders, and exam checklists.
-              </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => onGoToTab('notes')}
-                className="w-full text-xs font-bold"
-              >
-                Open Study Notes <ArrowRight className="h-3.5 w-3.5" />
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Notes mini-card */}
+          <div style={{
+            background: 'white', border: '1.5px solid #E8F5E9',
+            borderRadius: 22, padding: 22,
+            boxShadow: '0 2px 14px rgba(0,0,0,0.04)',
+          }}>
+            <h4 style={{
+              fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+              fontSize: '0.95rem', color: '#1A3A1A', marginBottom: 8,
+              display: 'flex', alignItems: 'center', gap: 7,
+            }}>📝 Study Scratchpad</h4>
+            <p style={{ fontSize: '0.8rem', color: '#7A9A7A', marginBottom: 14, lineHeight: 1.5 }}>
+              Save formula summaries, theorems, and exam checklists.
+            </p>
+            <button
+              onClick={() => onGoToTab('notes')}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                width: '100%', background: '#E8F5E9',
+                color: '#2E7D32', border: '1.5px solid #C8E6C9',
+                borderRadius: 50, padding: '9px 0',
+                fontSize: '0.82rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+              }}
+            >
+              Open Study Notes →
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Shortcuts */}
+      {/* ── Shortcuts ───────────────────────────────────────────────────── */}
       <ShortcutsGrid />
     </div>
   )

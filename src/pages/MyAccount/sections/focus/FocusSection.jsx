@@ -1,35 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  Headphones,
-  Flame,
-  Target,
-  Sparkles,
-  Timer,
-} from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card'
-import { Button } from '../../../../components/ui/button'
-import { Badge } from '../../../../components/ui/badge'
-import { cn } from '../../../../lib/utils'
 
 const PRESETS = [
   { label: '25m Focus (Pomodoro)', duration: 25 * 60, type: 'focus' },
-  { label: '50m Deep Work', duration: 50 * 60, type: 'deep' },
-  { label: '5m Quick Break', duration: 5 * 60, type: 'break' },
-  { label: '15m Long Break', duration: 15 * 60, type: 'longBreak' },
+  { label: '50m Deep Work',        duration: 50 * 60, type: 'deep'  },
+  { label: '5m Quick Break',       duration:  5 * 60, type: 'break' },
+  { label: '15m Long Break',       duration: 15 * 60, type: 'longBreak' },
 ]
 
 export default function FocusSection() {
-  const [selectedPreset, setSelectedPreset] = useState(PRESETS[0])
-  const [timeLeft, setTimeLeft] = useState(PRESETS[0].duration)
-  const [isRunning, setIsRunning] = useState(false)
-  const [completedSessions, setCompletedSessions] = useState(() => {
-    return parseInt(localStorage.getItem('studylk_focus_sessions') || '0', 10)
-  })
+  const [selectedPreset,     setSelectedPreset]     = useState(PRESETS[0])
+  const [timeLeft,           setTimeLeft]           = useState(PRESETS[0].duration)
+  const [isRunning,          setIsRunning]          = useState(false)
+  const [completedSessions,  setCompletedSessions]  = useState(() =>
+    parseInt(localStorage.getItem('studylk_focus_sessions') || '0', 10)
+  )
   const [ambientSound, setAmbientSound] = useState(false)
-
   const timerRef = useRef(null)
 
   useEffect(() => {
@@ -69,138 +54,197 @@ export default function FocusSection() {
     setTimeLeft(selectedPreset.duration)
   }
 
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = timeLeft % 60
-  const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-
+  const minutes         = Math.floor(timeLeft / 60)
+  const seconds         = timeLeft % 60
+  const formattedTime   = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   const progressPercent = ((selectedPreset.duration - timeLeft) / selectedPreset.duration) * 100
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <Card className="flex flex-col items-center p-8 text-center sm:p-10">
-        <Badge variant="default" className="mb-3 gap-1.5 px-3 py-1">
-          <Sparkles className="h-3.5 w-3.5 text-emerald-600" />
-          <span>Deep Work & Study Mode</span>
-        </Badge>
+    <>
+      <style>{`
+        .fp-preset-btn:hover  { background: #E8F5E9 !important; color: #2E7D32 !important; }
+        .fp-control-btn:hover { transform: translateY(-1px); }
+        .fp-ambient:hover     { background: #E8F5E9 !important; }
+      `}</style>
 
-        <h2 className="text-2xl font-black text-[#1A3A1A] md:text-3xl">
-          Focus Zone
-        </h2>
-        <p className="mb-6 max-w-md text-xs text-zinc-500 md:text-sm">
-          Maximize study retention with interval-based focus cycles and organized breaks.
-        </p>
+      <div style={{ maxWidth: 560, margin: '0 auto' }}>
+        <div style={{
+          background: 'white', border: '1.5px solid #E8F5E9',
+          borderRadius: 22, padding: '40px 32px',
+          boxShadow: '0 2px 14px rgba(0,0,0,0.04)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          textAlign: 'center',
+        }}>
+          {/* Badge */}
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: '#E8F5E9', border: '1.5px solid #C8E6C9',
+            borderRadius: 50, padding: '4px 14px',
+            fontSize: '0.73rem', fontWeight: 800, color: '#2E7D32',
+            letterSpacing: '0.06em', textTransform: 'uppercase',
+            marginBottom: 16,
+          }}>
+            ✨ Deep Work & Study Mode
+          </div>
 
-        {/* Preset Selector */}
-        <div className="mb-8 flex flex-wrap justify-center gap-2">
-          {PRESETS.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSelectPreset(p)}
-              className={cn(
-                'rounded-full px-4 py-1.5 text-xs font-bold transition-all cursor-pointer',
-                selectedPreset.label === p.label
-                  ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-emerald-50 hover:text-emerald-700'
-              )}
+          <h2 style={{
+            fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+            fontSize: 'clamp(1.5rem, 3vw, 2rem)', color: '#1A3A1A',
+            marginBottom: 6,
+          }}>Focus Zone</h2>
+          <p style={{ fontSize: '0.85rem', color: '#7A9A7A', marginBottom: 28, maxWidth: 360, lineHeight: 1.6 }}>
+            Maximize study retention with interval-based focus cycles and structured breaks.
+          </p>
+
+          {/* Preset pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginBottom: 32 }}>
+            {PRESETS.map((p, idx) => {
+              const isSelected = selectedPreset.label === p.label
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleSelectPreset(p)}
+                  className={!isSelected ? 'fp-preset-btn' : ''}
+                  style={{
+                    padding: '7px 16px', borderRadius: 50, fontSize: '0.8rem', fontWeight: 700,
+                    border: isSelected ? 'none' : '1.5px solid #E8F5E9',
+                    background: isSelected
+                      ? 'linear-gradient(135deg, #4CAF50, #2E7D32)'
+                      : 'white',
+                    color: isSelected ? 'white' : '#4A6A4A',
+                    cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    boxShadow: isSelected ? '0 3px 10px rgba(76,175,80,0.28)' : 'none',
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                >
+                  {p.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Circular SVG timer */}
+          <div style={{ position: 'relative', width: 240, height: 240, marginBottom: 32 }}>
+            <svg
+              style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}
+              viewBox="0 0 260 260"
             >
-              {p.label}
-            </button>
-          ))}
-        </div>
+              <circle
+                cx="130" cy="130" r="110"
+                fill="none" stroke="rgba(187,247,208,0.6)" strokeWidth="10"
+              />
+              <circle
+                cx="130" cy="130" r="110"
+                fill="none" stroke="#4CAF50" strokeWidth="10"
+                strokeLinecap="round"
+                style={{
+                  strokeDasharray: 691,
+                  strokeDashoffset: 691 - (691 * progressPercent) / 100,
+                  transition: 'stroke-dashoffset 0.7s linear',
+                }}
+              />
+            </svg>
 
-        {/* Circular Progress Ring Timer */}
-        <div className="relative mb-8 flex h-60 w-60 items-center justify-center">
-          <svg className="h-full w-full -rotate-90 transform" viewBox="0 0 260 260">
-            <circle
-              cx="130"
-              cy="130"
-              r="110"
-              className="fill-none stroke-emerald-100/60 stroke-[10]"
-            />
-            <circle
-              cx="130"
-              cy="130"
-              r="110"
-              className="fill-none stroke-emerald-600 stroke-[10] transition-all duration-700 ease-linear"
-              strokeLinecap="round"
-              style={{
-                strokeDasharray: 691,
-                strokeDashoffset: 691 - (691 * progressPercent) / 100,
-              }}
-            />
-          </svg>
-
-          <div className="absolute flex flex-col items-center">
-            <span className="text-5xl font-black tracking-tight text-[#1A3A1A]">
-              {formattedTime}
-            </span>
-            <span className="mt-1 text-[11px] font-extrabold uppercase tracking-wider text-emerald-600">
-              {isRunning ? '🔥 In Progress' : 'Paused'}
-            </span>
-          </div>
-        </div>
-
-        {/* Action Controls */}
-        <div className="mb-8 flex items-center justify-center gap-3">
-          <Button
-            size="lg"
-            onClick={() => setIsRunning(!isRunning)}
-            className="gap-2 px-8 text-base font-black"
-          >
-            {isRunning ? (
-              <>
-                <Pause className="h-5 w-5" /> Pause
-              </>
-            ) : (
-              <>
-                <Play className="h-5 w-5 fill-white" /> Start Focus
-              </>
-            )}
-          </Button>
-
-          <Button variant="outline" size="lg" onClick={handleReset} className="gap-2">
-            <RotateCcw className="h-4 w-4" /> Reset
-          </Button>
-        </div>
-
-        {/* Footer Metrics */}
-        <div className="grid w-full grid-cols-1 gap-4 border-t border-zinc-100 pt-6 sm:grid-cols-3">
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center gap-1.5 text-base font-black text-[#1A3A1A]">
-              <Flame className="h-4 w-4 text-amber-500" />
-              <span>{completedSessions}</span>
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{
+                fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                fontSize: '3rem', color: '#1A3A1A', letterSpacing: '-0.02em', lineHeight: 1,
+              }}>{formattedTime}</span>
+              <span style={{
+                fontSize: '0.7rem', fontWeight: 800, color: '#4CAF50',
+                textTransform: 'uppercase', letterSpacing: '0.09em', marginTop: 6,
+              }}>
+                {isRunning ? '🔥 In Progress' : '⏸ Paused'}
+              </span>
             </div>
-            <span className="text-xs font-semibold text-zinc-400">Completed Sessions</span>
           </div>
 
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center gap-1.5 text-base font-black text-[#1A3A1A]">
-              <Target className="h-4 w-4 text-emerald-600" />
-              <span>
+          {/* Controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 32 }}>
+            <button
+              className="fp-control-btn"
+              onClick={() => setIsRunning(r => !r)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+                color: 'white', border: 'none', borderRadius: 50,
+                padding: '12px 28px', fontSize: '1rem', fontWeight: 800,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                boxShadow: '0 4px 16px rgba(76,175,80,0.35)',
+                transition: 'transform 0.16s',
+              }}
+            >
+              {isRunning ? '⏸ Pause' : '▶ Start Focus'}
+            </button>
+            <button
+              className="fp-control-btn"
+              onClick={handleReset}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                background: 'white', border: '1.5px solid #C8E6C9',
+                color: '#3A5A3A', borderRadius: 50,
+                padding: '12px 22px', fontSize: '0.9rem', fontWeight: 700,
+                cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                transition: 'transform 0.16s',
+              }}
+            >
+              ↺ Reset
+            </button>
+          </div>
+
+          {/* Footer metrics */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 16, width: '100%',
+            borderTop: '1.5px solid #E8F5E9', paddingTop: 24,
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                fontSize: '1.4rem', color: '#1A3A1A',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+              }}>🔥 {completedSessions}</div>
+              <div style={{ fontSize: '0.7rem', color: '#7A9A7A', fontWeight: 600, marginTop: 2 }}>
+                Completed Sessions
+              </div>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                fontSize: '1.4rem', color: '#1A3A1A',
+              }}>
                 {(completedSessions * 25) / 60 >= 1
                   ? `${((completedSessions * 25) / 60).toFixed(1)} hrs`
                   : `${completedSessions * 25} mins`}
-              </span>
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#7A9A7A', fontWeight: 600, marginTop: 2 }}>
+                Focus Time Logged
+              </div>
             </div>
-            <span className="text-xs font-semibold text-zinc-400">Focus Time Logged</span>
-          </div>
-
-          <div className="flex flex-col items-center justify-center">
-            <button
-              onClick={() => setAmbientSound(!ambientSound)}
-              className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold transition-all cursor-pointer',
-                ambientSound
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-              )}
-            >
-              <Headphones className="h-3.5 w-3.5" />
-              <span>{ambientSound ? 'Ambient: ON' : 'Ambient: OFF'}</span>
-            </button>
+            <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <button
+                onClick={() => setAmbientSound(a => !a)}
+                className="fp-ambient"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '6px 14px', borderRadius: 50, fontSize: '0.75rem', fontWeight: 700,
+                  background: ambientSound ? '#E8F5E9' : '#F8FBF8',
+                  border: '1.5px solid #E8F5E9',
+                  color: ambientSound ? '#2E7D32' : '#7A9A7A',
+                  cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  transition: 'background 0.15s',
+                }}
+              >
+                🎧 {ambientSound ? 'Ambient: ON' : 'Ambient: OFF'}
+              </button>
+            </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </>
   )
 }

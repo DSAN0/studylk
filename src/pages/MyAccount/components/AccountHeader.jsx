@@ -1,73 +1,128 @@
 import React from 'react'
-import { GraduationCap, CheckCircle2, BookOpen, Sparkles } from 'lucide-react'
-import { Badge } from '../../../components/ui/badge'
 
-export default function AccountHeader({
-  studentName = 'Student',
-  enrollmentsCount = 0,
-  approvedCount = 0
-}) {
+export default function AccountHeader({ studentName = 'Student', enrollmentsCount = 0, approvedCount = 0 }) {
   const initial = studentName ? studentName.charAt(0).toUpperCase() : 'S'
 
   return (
-    <header className="relative overflow-hidden border-b border-emerald-100 bg-gradient-to-r from-emerald-50 via-emerald-100/30 to-green-50 px-4 py-8 md:px-8">
-      {/* Subtle Background Pattern */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{
-          backgroundImage: 'radial-gradient(#059669 1.5px, transparent 1.5px)',
-          backgroundSize: '24px 24px',
-        }}
-      />
+    <header style={{
+      background: 'linear-gradient(135deg, #E8F5E9 0%, #F0FAF0 100%)',
+      borderBottom: '1.5px solid #C8E6C9',
+      padding: '44px 24px 40px',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      {/* Dot pattern overlay */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage: 'radial-gradient(circle, rgba(76,175,80,0.11) 1.5px, transparent 1.5px)',
+        backgroundSize: '28px 28px',
+        maskImage: 'radial-gradient(ellipse 80% 100% at 0% 50%, black 0%, transparent 75%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 80% 100% at 0% 50%, black 0%, transparent 75%)',
+      }} />
 
-      <div className="relative mx-auto flex max-w-7xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
-        {/* Left User Identity */}
-        <div className="flex items-center gap-4">
-          <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-600 to-green-800 text-2xl font-black text-white shadow-lg shadow-emerald-700/25 ring-4 ring-white">
-            {initial}
-            <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-500 ring-2 ring-emerald-500/20" />
-          </div>
-
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="gap-1 bg-white py-0.5 text-xs text-emerald-800 shadow-sm border border-emerald-200">
-                <Sparkles className="h-3 w-3 text-emerald-600" />
-                Student Learning Hub
-              </Badge>
+      <div style={{ maxWidth: 1280, margin: '0 auto', position: 'relative' }}>
+        <div style={{
+          display: 'flex', flexWrap: 'wrap',
+          alignItems: 'center', justifyContent: 'space-between',
+          gap: 24,
+        }}>
+          {/* Left: Identity */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* Avatar */}
+            <div style={{
+              width: 64, height: 64, borderRadius: 18, flexShrink: 0,
+              background: 'linear-gradient(135deg, #4CAF50, #2E7D32)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.7rem', fontWeight: 900, color: 'white',
+              boxShadow: '0 6px 20px rgba(76,175,80,0.35)',
+              position: 'relative',
+            }}>
+              {initial}
+              <span style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 15, height: 15, borderRadius: '50%',
+                background: '#4CAF50', border: '2.5px solid white',
+              }} />
             </div>
-            <h1 className="text-2xl font-black tracking-tight text-[#1A3A1A] md:text-3xl">
-              Welcome back, {studentName}!
-            </h1>
-            <p className="text-sm text-zinc-600">
-              Track your enrolled courses, plan study routines, track daily goals, and stay focused.
-            </p>
-          </div>
-        </div>
 
-        {/* Right Stats Quick Pill Cards */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-white px-4 py-2.5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-              <BookOpen className="h-5 w-5" />
-            </div>
             <div>
-              <div className="text-xl font-extrabold leading-none text-[#1A3A1A]">
-                {enrollmentsCount}
+              {/* Pill badge */}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                background: 'white', border: '1.5px solid #C8E6C9',
+                borderRadius: 50, padding: '3px 12px',
+                fontSize: '0.72rem', fontWeight: 800, color: '#2E7D32',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                marginBottom: 8,
+              }}>
+                ✨ Student Learning Hub
               </div>
-              <div className="text-xs font-semibold text-zinc-500">Enrolled Courses</div>
+
+              <h1 style={{
+                fontFamily: "'Nunito', sans-serif",
+                fontWeight: 900,
+                fontSize: 'clamp(1.5rem, 3.5vw, 2.2rem)',
+                color: '#1A3A1A', letterSpacing: '-0.02em',
+                lineHeight: 1.15, marginBottom: 4,
+              }}>
+                Welcome back, {studentName}!
+              </h1>
+              <p style={{ fontSize: '0.9rem', color: '#5A7A5A', fontWeight: 500 }}>
+                Track courses, plan your study routine, and stay focused.
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-green-200 bg-green-50 px-4 py-2.5 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="text-xl font-extrabold leading-none text-green-800">
-                {approvedCount}
+          {/* Right: Stat pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              background: 'white', border: '1.5px solid #E8F5E9',
+              borderRadius: 18, padding: '14px 20px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12,
+                background: '#E8F5E9', border: '1.5px solid #C8E6C9',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.1rem',
+              }}>📚</div>
+              <div>
+                <div style={{
+                  fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                  fontSize: '1.5rem', color: '#2E7D32', lineHeight: 1,
+                }}>{enrollmentsCount}</div>
+                <div style={{
+                  fontSize: '0.7rem', color: '#7A9A7A', fontWeight: 700,
+                  textTransform: 'uppercase', letterSpacing: '0.05em',
+                }}>Enrolled</div>
               </div>
-              <div className="text-xs font-semibold text-green-700/80">Active & Learning</div>
             </div>
+
+            {approvedCount > 0 && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                background: '#F0FDF4', border: '1.5px solid #BBF7D0',
+                borderRadius: 18, padding: '14px 20px',
+                boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12,
+                  background: '#E8F5E9', border: '1.5px solid #A5D6A7',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.1rem',
+                }}>✅</div>
+                <div>
+                  <div style={{
+                    fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                    fontSize: '1.5rem', color: '#16A34A', lineHeight: 1,
+                  }}>{approvedCount}</div>
+                  <div style={{
+                    fontSize: '0.7rem', color: '#4CAF50', fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: '0.05em',
+                  }}>Active</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,72 +1,66 @@
 import React from 'react'
-import { BookOpen, CheckCircle2, Clock, Target } from 'lucide-react'
-import { Card } from '../../../../components/ui/card'
 
-export default function MetricCards({
-  enrollmentsCount = 0,
-  approvedCount = 0,
-  pendingCount = 0,
-  onGoToTab,
-}) {
-  const metrics = [
-    {
-      label: 'Enrolled Courses',
-      value: enrollmentsCount,
-      icon: BookOpen,
-      color: 'emerald',
-      tab: 'courses',
-      bgClass: 'bg-emerald-50 text-emerald-700',
-    },
-    {
-      label: 'Active & Approved',
-      value: approvedCount,
-      icon: CheckCircle2,
-      color: 'green',
-      tab: 'courses',
-      bgClass: 'bg-green-50 text-green-700',
-    },
-    {
-      label: 'Pending Verification',
-      value: pendingCount,
-      icon: Clock,
-      color: 'amber',
-      tab: 'courses',
-      bgClass: 'bg-amber-50 text-amber-700',
-    },
-    {
-      label: 'Goals & Targets',
-      value: 'Study Daily',
-      icon: Target,
-      color: 'purple',
-      tab: 'goals',
-      bgClass: 'bg-purple-50 text-purple-700',
-    },
-  ]
+const METRICS_CONFIG = [
+  { emoji: '📚', label: 'Enrolled Courses', color: '#2E7D32', bg: '#E8F5E9', border: '#C8E6C9', tab: 'courses',   valueKey: 'enrollmentsCount' },
+  { emoji: '✅', label: 'Active & Approved', color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0', tab: 'courses',   valueKey: 'approvedCount' },
+  { emoji: '⏳', label: 'Pending Review',    color: '#D97706', bg: '#FEF9E7', border: '#FDE68A', tab: 'courses',   valueKey: 'pendingCount' },
+  { emoji: '🎯', label: 'Goals & Targets',   color: '#6D28D9', bg: '#F5F3FF', border: '#DDD6FE', tab: 'goals',    valueKey: null },
+]
+
+export default function MetricCards({ enrollmentsCount = 0, approvedCount = 0, pendingCount = 0, onGoToTab }) {
+  const values = { enrollmentsCount, approvedCount, pendingCount }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {metrics.map((m, idx) => {
-        const Icon = m.icon
-        return (
-          <Card
-            key={idx}
+    <>
+      <style>{`
+        .metric-card:hover {
+          transform: translateY(-4px) !important;
+          box-shadow: 0 10px 30px rgba(76,175,80,0.12) !important;
+          border-color: #A5D6A7 !important;
+        }
+      `}</style>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+        gap: 14,
+      }}>
+        {METRICS_CONFIG.map((m, i) => (
+          <div
+            key={i}
+            className="metric-card"
             onClick={() => onGoToTab(m.tab)}
-            className="flex cursor-pointer items-center gap-4 p-5 transition-all hover:-translate-y-1 hover:border-emerald-300 hover:shadow-md bg-white border-emerald-100"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14,
+              background: 'white', border: '1.5px solid #E8F5E9',
+              borderRadius: 18, padding: '18px 20px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
+              cursor: 'pointer',
+              transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+              animation: `fadeUp 0.35s ${i * 0.07}s ease both`,
+            }}
           >
-            <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${m.bgClass}`}>
-              <Icon className="h-6 w-6" />
+            <div style={{
+              width: 46, height: 46, borderRadius: 13, flexShrink: 0,
+              background: m.bg, border: `1.5px solid ${m.border}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1.2rem',
+            }}>
+              {m.emoji}
             </div>
             <div>
-              <div className="text-2xl font-black text-[#1A3A1A]">
-                {m.value}
+              <div style={{
+                fontFamily: "'Nunito', sans-serif", fontWeight: 900,
+                fontSize: '1.7rem', color: m.color, lineHeight: 1,
+              }}>
+                {m.valueKey ? values[m.valueKey] : '📋'}
               </div>
-              <div className="text-xs font-semibold text-zinc-500">
+              <div style={{ fontSize: '0.73rem', color: '#7A9A7A', fontWeight: 700, marginTop: 2 }}>
                 {m.label}
               </div>
             </div>
-          </Card>
-        )
-      })}
-    </div>
+          </div>
+        ))}
+      </div>
+    </>
   )
 }

@@ -1,8 +1,4 @@
 import React from 'react'
-import { Search, X } from 'lucide-react'
-import { Input } from '../../../../components/ui/input'
-import { Button } from '../../../../components/ui/button'
-import { cn } from '../../../../lib/utils'
 
 export default function CourseFilters({
   searchQuery,
@@ -13,54 +9,85 @@ export default function CourseFilters({
   approvedCount = 0,
   pendingCount = 0,
 }) {
-  const filterButtons = [
-    { id: 'all', label: `All (${allCount})` },
-    { id: 'approved', label: `Approved (${approvedCount})` },
-    { id: 'pending', label: `Pending (${pendingCount})` },
+  const filters = [
+    { id: 'all',      label: `All (${allCount})` },
+    { id: 'approved', label: `✅ Approved (${approvedCount})` },
+    { id: 'pending',  label: `⏳ Pending (${pendingCount})` },
   ]
 
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-1.5">
-        {filterButtons.map(btn => {
-          const isActive = courseFilter === btn.id
-          return (
-            <button
-              key={btn.id}
-              onClick={() => setCourseFilter(btn.id)}
-              className={cn(
-                'rounded-full px-3.5 py-1.5 text-xs font-bold transition-colors cursor-pointer',
-                isActive
-                  ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-emerald-50 hover:text-emerald-700 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800'
-              )}
-            >
-              {btn.label}
-            </button>
-          )
-        })}
-      </div>
+    <>
+      <style>{`
+        .cf-pill:hover   { background: #E8F5E9 !important; color: #2E7D32 !important; border-color: #A5D6A7 !important; }
+        .cf-search:focus { border-color: #4CAF50 !important; outline: none; box-shadow: 0 0 0 3px rgba(76,175,80,0.12); }
+        .cf-clear:hover  { color: #2E7D32 !important; }
+      `}</style>
 
-      {/* Search Input */}
-      <div className="relative w-full sm:w-72">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
-        <Input
-          type="text"
-          placeholder="Search course or teacher..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="pl-9 pr-8"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery('')}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        )}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        {/* Filter pills */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {filters.map(f => {
+            const isActive = courseFilter === f.id
+            return (
+              <button
+                key={f.id}
+                onClick={() => setCourseFilter(f.id)}
+                className={!isActive ? 'cf-pill' : ''}
+                style={{
+                  padding: '7px 16px', borderRadius: 50, fontSize: '0.8rem', fontWeight: 700,
+                  border: isActive ? 'none' : '1.5px solid #E8F5E9',
+                  background: isActive
+                    ? 'linear-gradient(135deg, #4CAF50, #2E7D32)'
+                    : 'white',
+                  color: isActive ? 'white' : '#4A6A4A',
+                  cursor: 'pointer',
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  boxShadow: isActive ? '0 3px 10px rgba(76,175,80,0.28)' : 'none',
+                  transition: 'background 0.15s, color 0.15s, border-color 0.15s',
+                }}
+              >
+                {f.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Search input */}
+        <div style={{ position: 'relative', minWidth: 240 }}>
+          <span style={{
+            position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+            fontSize: '0.9rem', pointerEvents: 'none', color: '#9ABA9A',
+          }}>🔍</span>
+          <input
+            type="text"
+            placeholder="Search course or teacher..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="cf-search"
+            style={{
+              width: '100%',
+              padding: '9px 36px 9px 36px',
+              border: '1.5px solid #E8F5E9', borderRadius: 14,
+              fontSize: '0.85rem', color: '#1A3A1A',
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              background: 'white',
+              transition: 'border-color 0.15s, box-shadow 0.15s',
+            }}
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="cf-clear"
+              style={{
+                position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                fontSize: '0.9rem', color: '#AACAAA',
+                transition: 'color 0.15s',
+              }}
+            >✕</button>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }
