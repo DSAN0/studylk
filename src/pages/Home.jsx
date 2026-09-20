@@ -38,6 +38,91 @@ const STREAMS = [
   },
 ]
 
+const EXPLORE_GRADES = [
+  {
+    id: 'al',
+    label: 'G.C.E. A/L',
+    subtitle: 'Grade 12 & 13',
+    badge: '4 Streams · 30+ Subjects',
+    icon: '🎓',
+    desc: 'Science, Commerce, Arts & Technology streams with full past papers, model papers & revision notes.',
+    to: '/explore/al',
+    gradient: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 60%, #43A047 100%)',
+    badgeBg: 'rgba(255,255,255,0.18)',
+    badgeBorder: 'rgba(255,255,255,0.3)',
+    shadow: '0 8px 30px rgba(46,125,50,0.22)',
+  },
+  {
+    id: 'ol',
+    label: 'G.C.E. O/L',
+    subtitle: 'Grade 10 & 11',
+    badge: '20+ Core Subjects',
+    icon: '📘',
+    desc: 'Maths, Science, English, Sinhala, History, ICT & commerce with comprehensive questions and answers.',
+    to: '/explore/ol',
+    gradient: 'linear-gradient(135deg, #0D47A1 0%, #1565C0 60%, #1E88E5 100%)',
+    badgeBg: 'rgba(255,255,255,0.18)',
+    badgeBorder: 'rgba(255,255,255,0.3)',
+    shadow: '0 8px 30px rgba(21,101,192,0.22)',
+  },
+  {
+    id: 'grade5',
+    label: 'Grade 5',
+    subtitle: 'Scholarship Exam',
+    badge: 'Scholarship Hub',
+    icon: '⭐',
+    desc: 'Specialized paper 1 & paper 2 past questions, model papers and evaluation schemes for young scholars.',
+    to: '/explore/grade5',
+    gradient: 'linear-gradient(135deg, #D97706 0%, #EA580C 60%, #F97316 100%)',
+    badgeBg: 'rgba(255,255,255,0.18)',
+    badgeBorder: 'rgba(255,255,255,0.3)',
+    shadow: '0 8px 30px rgba(234,88,12,0.22)',
+  },
+]
+
+const EXPLORE_CATEGORIES = [
+  {
+    title: 'Past Papers',
+    desc: 'Official exam papers & MCQ practice',
+    icon: '📄',
+    to: '/explore/past-papers',
+    badge: 'MCQ Practice',
+    color: '#2E7D32',
+    bg: '#F1F8F1',
+    border: '#C8E6C9',
+  },
+  {
+    title: 'Model Papers',
+    desc: 'Structured questions & marking schemes',
+    icon: '🏆',
+    to: '/explore/model-papers',
+    badge: 'Target Revision',
+    color: '#D97706',
+    bg: '#FFFBEB',
+    border: '#FDE68A',
+  },
+  {
+    title: 'School Papers',
+    desc: 'Top schools term tests & provincial exams',
+    icon: '🏫',
+    to: '/explore/school-papers',
+    badge: 'Term Tests',
+    color: '#1D4ED8',
+    bg: '#EFF6FF',
+    border: '#BFDBFE',
+  },
+  {
+    title: 'Study Notes',
+    desc: 'Short notes, formulas & quick summaries',
+    icon: '📋',
+    to: '/explore/notes',
+    badge: 'Summary Sheets',
+    color: '#7C3AED',
+    bg: '#F5F3FF',
+    border: '#DDD6FE',
+  },
+]
+
 const STATS = [
   { value: '4',     label: 'Streams',         icon: '📚' },
   { value: '56+',   label: 'Subjects',         icon: '📖' },
@@ -163,6 +248,37 @@ export default function Home() {
         }
         .home-btn-outline:hover {
           background: #4CAF50; color: white; transform: translateY(-2px);
+        }
+
+        .home-explore-card {
+          border-radius: 24px;
+          padding: 32px 28px;
+          color: white;
+          cursor: pointer;
+          transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
+        }
+        .home-explore-card:hover {
+          transform: translateY(-8px) scale(1.015);
+        }
+        .home-explore-shortcut {
+          background: white;
+          border-radius: 18px;
+          padding: 20px 22px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+          text-decoration: none;
+        }
+        .home-explore-shortcut:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 10px 28px rgba(0,0,0,0.08);
         }
 
         .stream-card-home {
@@ -371,6 +487,177 @@ export default function Home() {
               <HeroIllustration />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── EXPLORE SECTION ── */}
+      <section style={{
+        padding: '84px 24px',
+        background: 'linear-gradient(180deg, #F0FAF0 0%, #F8FBF8 50%, #FFFFFF 100%)',
+        borderTop: '1px solid #E8F5E9',
+        borderBottom: '1px solid #E8F5E9',
+        position: 'relative',
+      }}>
+        <div style={{ maxWidth: 1160, margin: '0 auto' }}>
+          
+          <SectionHeader
+            eyebrow="🔍 Free Study Resources"
+            title="Explore Past Papers, Model Papers & Study Notes"
+            desc="Select your grade or jump straight to our categorized library of official past papers, model papers, and revision notes."
+          />
+
+          {/* 3 Major Grade Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 24,
+            marginBottom: 32,
+          }}>
+            {EXPLORE_GRADES.map(grade => (
+              <div
+                key={grade.id}
+                className="home-explore-card"
+                style={{
+                  background: grade.gradient,
+                  boxShadow: grade.shadow,
+                }}
+                onClick={() => navigate(grade.to)}
+              >
+                {/* Decorative background glow */}
+                <div style={{
+                  position: 'absolute', top: -30, right: -30, width: 130, height: 130,
+                  borderRadius: '50%', background: 'rgba(255,255,255,0.14)',
+                  pointerEvents: 'none',
+                }} />
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <span style={{ fontSize: '2.8rem', filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.2))' }}>
+                    {grade.icon}
+                  </span>
+                  <span style={{
+                    fontSize: '0.78rem', fontWeight: 700,
+                    background: grade.badgeBg, border: `1px solid ${grade.badgeBorder}`,
+                    color: 'white', padding: '5px 12px', borderRadius: 50,
+                    backdropFilter: 'blur(6px)',
+                  }}>
+                    {grade.badge}
+                  </span>
+                </div>
+
+                <div style={{ marginBottom: 4 }}>
+                  <span style={{
+                    fontSize: '0.82rem', fontWeight: 700, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', color: 'rgba(255,255,255,0.8)',
+                  }}>
+                    {grade.subtitle}
+                  </span>
+                </div>
+
+                <h3 style={{
+                  fontFamily: "'Nunito', sans-serif",
+                  fontWeight: 900, fontSize: '1.8rem',
+                  color: 'white', marginBottom: 12, lineHeight: 1.1,
+                }}>
+                  {grade.label}
+                </h3>
+
+                <p style={{
+                  fontSize: '0.88rem', color: 'rgba(255,255,255,0.9)',
+                  lineHeight: 1.6, marginBottom: 26, flex: 1,
+                }}>
+                  {grade.desc}
+                </p>
+
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  paddingTop: 16, borderTop: '1px solid rgba(255,255,255,0.2)',
+                }}>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 800, color: 'white' }}>
+                    Explore {grade.label}
+                  </span>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.25)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.95rem',
+                  }}>
+                    →
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 4 Category Shortcuts Grid */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 16,
+            marginBottom: 32,
+          }}>
+            {EXPLORE_CATEGORIES.map(cat => (
+              <div
+                key={cat.title}
+                className="home-explore-shortcut"
+                style={{ border: `1.5px solid ${cat.border}` }}
+                onClick={() => navigate(cat.to)}
+              >
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14,
+                  background: cat.bg, border: `1px solid ${cat.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '1.5rem', flexShrink: 0,
+                }}>
+                  {cat.icon}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <div style={{ fontWeight: 800, fontSize: '0.95rem', color: '#1A3A1A' }}>
+                      {cat.title}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#6A8A6A', lineHeight: 1.4 }}>
+                    {cat.desc}
+                  </div>
+                </div>
+                <span style={{ color: cat.color, fontWeight: 800, fontSize: '1.1rem' }}>›</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Centered Explore Hub action */}
+          <div style={{
+            background: 'white',
+            borderRadius: 20,
+            border: '1.5px solid #E8F5E9',
+            padding: '24px 32px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 18,
+            boxShadow: '0 4px 20px rgba(76,175,80,0.06)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <span style={{ fontSize: '2rem' }}>📚</span>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1A3A1A' }}>
+                  Looking for everything in one place?
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#5A7A5A' }}>
+                  Visit the full Explore Hub to search across all grades, subjects, and resource collections.
+                </div>
+              </div>
+            </div>
+            <button
+              className="home-btn-outline"
+              style={{ padding: '11px 24px', fontSize: '0.9rem' }}
+              onClick={() => navigate('/explore')}
+            >
+              Open Explore Hub →
+            </button>
+          </div>
+
         </div>
       </section>
 

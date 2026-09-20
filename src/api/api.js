@@ -811,10 +811,14 @@ export const adminGetExplorePaperMCQQuestions = paperId =>
   api.get(`/admin/explore/papers/${paperId}/mcq-questions/`, { headers: adminAuthHeader() })
 
 export const adminCreateExplorePaperMCQQuestion = (paperId, data) =>
-  api.post(`/admin/explore/papers/${paperId}/mcq-questions/`, data, { headers: adminAuthHeader() })
+  api.post(`/admin/explore/papers/${paperId}/mcq-questions/`, data, {
+    headers: { ...adminAuthHeader(), 'Content-Type': 'multipart/form-data' },
+  })
 
 export const adminUpdateExplorePaperMCQQuestion = (id, data) =>
-  api.put(`/admin/explore/mcq-questions/${id}/`, data, { headers: adminAuthHeader() })
+  api.put(`/admin/explore/mcq-questions/${id}/`, data, {
+    headers: { ...adminAuthHeader(), 'Content-Type': 'multipart/form-data' },
+  })
 
 export const adminDeleteExplorePaperMCQQuestion = id =>
   api.delete(`/admin/explore/mcq-questions/${id}/`, { headers: adminAuthHeader() })

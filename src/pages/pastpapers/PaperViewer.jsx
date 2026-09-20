@@ -88,8 +88,15 @@ export default function PaperViewer({ grade = 'AL' }) {
   const [mcqPaper, setMcqPaper] = useState(null)
   const [mcqLoading, setMcqLoading] = useState(false)
   const [mcqQuestions, setMcqQuestions] = useState([])
+  const [mcqMode, setMcqMode] = useState(null) // null (setup) | 'exam' | 'free-instant' | 'free-end'
   const [userAnswers, setUserAnswers] = useState({})
-  const [showExplanations, setShowExplanations] = useState({})
+  const [flaggedQuestions, setFlaggedQuestions] = useState({})
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [timeLeft, setTimeLeft] = useState(7200) // 2 hours default = 7200 seconds
+  const [timeSpent, setTimeSpent] = useState(0)
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
+  const [showPalette, setShowPalette] = useState(false)
+  const [zoomImage, setZoomImage] = useState(null) // { src: string, title: string }
 
   // Real papers, fetched from the backend for this grade/stream/subject
   const [allPapers, setAllPapers] = useState([])
@@ -111,12 +118,37 @@ export default function PaperViewer({ grade = 'AL' }) {
     return () => { cancelled = true }
   }, [gradeId, subjectKey, stream, grade])
 
+  // Timer countdown for Timed Exam mode
+  useEffect(() => {
+    let timer = null
+    if (mcqPaper && mcqMode === 'exam' && !isSubmitted && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            setIsSubmitted(true)
+            return 0
+          }
+          return prev - 1
+        })
+        setTimeSpent(prev => prev + 1)
+      }, 1000)
+    }
+    return () => { if (timer) clearInterval(timer) }
+  }, [mcqPaper, mcqMode, isSubmitted, timeLeft])
+
   async function openMcqPractice(paper) {
     setMcqPaper(paper)
     setMcqLoading(true)
     setMcqQuestions([])
+    setMcqMode(null) // Show mode selection setup screen
     setUserAnswers({})
-    setShowExplanations({})
+    setFlaggedQuestions({})
+    setIsSubmitted(false)
+    setTimeLeft(7200)
+    setTimeSpent(0)
+    setShowSubmitConfirm(false)
+    setShowPalette(false)
     try {
       const res = await getExplorePaperDetail(paper.id)
       setMcqQuestions(res.data.mcq_questions || [])
@@ -127,14 +159,50 @@ export default function PaperViewer({ grade = 'AL' }) {
     }
   }
 
+  function startMode(mode) {
+    setMcqMode(mode)
+    setUserAnswers({})
+    setFlaggedQuestions({})
+    setIsSubmitted(false)
+    setTimeLeft(7200)
+    setTimeSpent(0)
+    setShowSubmitConfirm(false)
+  }
+
   function handleSelectOption(qId, choice) {
+    if (isSubmitted && mcqMode === 'exam') return // Lock answers after exam submit
     setUserAnswers(prev => ({ ...prev, [qId]: choice }))
-    setShowExplanations(prev => ({ ...prev, [qId]: true }))
+  }
+
+  function toggleFlag(qId) {
+    setFlaggedQuestions(prev => ({ ...prev, [qId]: !prev[qId] }))
+  }
+
+  function handleSubmitQuiz() {
+    setIsSubmitted(true)
+    setShowSubmitConfirm(false)
+    // Scroll to top of modal to see scorecard
+    const modalBody = document.getElementById('mcq-modal-body')
+    if (modalBody) modalBody.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function resetQuiz() {
     setUserAnswers({})
-    setShowExplanations({})
+    setFlaggedQuestions({})
+    setIsSubmitted(false)
+    setTimeLeft(7200)
+    setTimeSpent(0)
+    setShowSubmitConfirm(false)
+  }
+
+  function formatTime(seconds) {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    const s = seconds % 60
+    if (h > 0) {
+      return `${h}:${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
+    }
+    return `${m}:${s < 10 ? '0' : ''}${s}`
   }
 
   // Filter option lists, derived from the papers actually returned
@@ -764,82 +832,236 @@ export default function PaperViewer({ grade = 'AL' }) {
         {/* Interactive MCQ Practice Modal */}
         {mcqPaper && (
           <div className="pv-modal-overlay" onClick={() => setMcqPaper(null)}>
-            <div className="pv-modal" style={{ maxWidth: 860, height: '90vh' }} onClick={e => e.stopPropagation()}>
-              <div className="pv-modal-header" style={{ background: '#f8fafc', padding: '16px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div
+              className="pv-modal"
+              style={{ maxWidth: 940, height: '92vh', display: 'flex', flexDirection: 'column' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {/* ── Modal Header ── */}
+              <div className="pv-modal-header" style={{ background: '#f8fafc', padding: '14px 20px', borderBottom: '1.5px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', flex: 1 }}>
                   <div style={{
                     width: 38, height: 38, borderRadius: 10,
-                    background: 'linear-gradient(135deg,#16a34a,#15803d)',
+                    background: mcqMode === 'exam' ? 'linear-gradient(135deg,#3b82f6,#1d4ed8)' : 'linear-gradient(135deg,#16a34a,#15803d)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'white', fontSize: '1.2rem', flexShrink: 0
+                    color: 'white', fontSize: '1.15rem', flexShrink: 0
                   }}>
-                    🎯
+                    {mcqMode === 'exam' ? '⏱️' : '🎯'}
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b' }}>
-                      {subjectName} — {mcqPaper.year} MCQ Practice
+                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span>{subjectName} — {mcqPaper.year} MCQ Practice</span>
+                      {mcqMode === 'exam' && (
+                        <span style={{ fontSize: '0.72rem', background: '#dbeafe', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '2px 8px', borderRadius: 20 }}>
+                          Timed Exam Mode (2h)
+                        </span>
+                      )}
+                      {mcqMode === 'free-instant' && (
+                        <span style={{ fontSize: '0.72rem', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0', padding: '2px 8px', borderRadius: 20 }}>
+                          Free Practice (Instant Feedback)
+                        </span>
+                      )}
+                      {mcqMode === 'free-end' && (
+                        <span style={{ fontSize: '0.72rem', background: '#f3e8ff', color: '#7e22ce', border: '1px solid #e9d5ff', padding: '2px 8px', borderRadius: 20 }}>
+                          Free Practice (Check at End)
+                        </span>
+                      )}
                     </h3>
-                    <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: 2 }}>
-                      {mcqPaper.medium} Medium · {mcqPaper.part} · {mcqQuestions.length} Questions
+                    <div style={{ fontSize: '0.76rem', color: '#64748b', marginTop: 2 }}>
+                      {mcqPaper.medium} Medium · {mcqPaper.part || 'Part 1'} · {mcqQuestions.length} Questions
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {Object.keys(userAnswers).length > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {mcqMode && (
                     <button
-                      onClick={resetQuiz}
+                      onClick={() => {
+                        if (confirm('Switch practice mode or restart? Progress in this session will be reset.')) {
+                          setMcqMode(null)
+                          resetQuiz()
+                        }
+                      }}
                       style={{
                         background: '#f1f5f9', border: '1px solid #cbd5e1',
-                        borderRadius: 8, padding: '6px 12px', fontSize: '0.78rem',
+                        borderRadius: 8, padding: '6px 10px', fontSize: '0.75rem',
                         fontWeight: 700, color: '#475569', cursor: 'pointer'
                       }}
                     >
-                      🔄 Reset
+                      ⚙️ Mode
                     </button>
                   )}
                   <button className="pv-modal-close" onClick={() => setMcqPaper(null)}>✕</button>
                 </div>
               </div>
 
-              {/* Quiz progress / stats bar */}
-              {!mcqLoading && mcqQuestions.length > 0 && (
+              {/* ── Sub-bar for Timer & Palette (When inside a mode) ── */}
+              {mcqMode && !mcqLoading && mcqQuestions.length > 0 && (
                 <div style={{
-                  padding: '12px 24px', background: '#f0fdf4',
-                  borderBottom: '1px solid #bbf7d0', display: 'flex',
+                  padding: '10px 20px', background: isSubmitted ? '#f0fdf4' : mcqMode === 'exam' ? '#f0f9ff' : '#fafafa',
+                  borderBottom: '1px solid #e2e8f0', display: 'flex',
                   alignItems: 'center', justifyContent: 'space-between',
                   flexWrap: 'wrap', gap: 10
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#166534' }}>
-                      Answered: {Object.keys(userAnswers).length} / {mcqQuestions.length}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    {/* Timer pill for Exam Mode */}
+                    {mcqMode === 'exam' && (
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        background: timeLeft <= 120 ? '#fee2e2' : timeLeft <= 600 ? '#fef3c7' : '#ffffff',
+                        border: `1.5px solid ${timeLeft <= 120 ? '#ef4444' : timeLeft <= 600 ? '#f59e0b' : '#cbd5e1'}`,
+                        color: timeLeft <= 120 ? '#b91c1c' : timeLeft <= 600 ? '#b45309' : '#1e293b',
+                        padding: '4px 12px', borderRadius: 50, fontWeight: 800, fontSize: '0.82rem',
+                        animation: timeLeft <= 120 && !isSubmitted ? 'pulse 1s infinite' : 'none'
+                      }}>
+                        <span>⏳ Time:</span>
+                        <span>{formatTime(timeLeft)}</span>
+                      </div>
+                    )}
+
+                    {/* Answered counter */}
+                    <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#334155' }}>
+                      Answered: <strong>{Object.keys(userAnswers).length}</strong> / {mcqQuestions.length}
                     </span>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#15803d' }}>
-                      Correct: {mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length}
-                    </span>
+
+                    {/* Flagged counter */}
+                    {Object.values(flaggedQuestions).filter(Boolean).length > 0 && (
+                      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#d97706' }}>
+                        🚩 Flagged: {Object.values(flaggedQuestions).filter(Boolean).length}
+                      </span>
+                    )}
+
+                    {/* Question Palette Toggle */}
+                    <button
+                      onClick={() => setShowPalette(prev => !prev)}
+                      style={{
+                        background: showPalette ? '#1e293b' : '#ffffff',
+                        color: showPalette ? 'white' : '#475569',
+                        border: '1px solid #cbd5e1', borderRadius: 8,
+                        padding: '4px 10px', fontSize: '0.75rem', fontWeight: 700,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+                      }}
+                    >
+                      📋 {showPalette ? 'Hide Palette' : 'Question Palette'}
+                    </button>
                   </div>
-                  <div style={{
-                    background: '#dcfce7', border: '1px solid #86efac',
-                    borderRadius: 50, padding: '3px 12px', fontSize: '0.78rem',
-                    fontWeight: 800, color: '#166534'
-                  }}>
-                    Score: {Object.keys(userAnswers).length > 0
-                      ? Math.round((mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length / Object.keys(userAnswers).length) * 100)
-                      : 0}%
+
+                  {/* Right side actions: Submit Exam / Check Answers */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {!isSubmitted ? (
+                      <button
+                        onClick={() => {
+                          const unanswered = mcqQuestions.length - Object.keys(userAnswers).length
+                          if (unanswered > 0) {
+                            setShowSubmitConfirm(true)
+                          } else {
+                            handleSubmitQuiz()
+                          }
+                        }}
+                        style={{
+                          background: mcqMode === 'exam' ? 'linear-gradient(135deg,#3b82f6,#1d4ed8)' : 'linear-gradient(135deg,#16a34a,#15803d)',
+                          color: 'white', border: 'none', borderRadius: 50,
+                          padding: '6px 18px', fontSize: '0.8rem', fontWeight: 800,
+                          cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
+                        }}
+                      >
+                        {mcqMode === 'exam' ? '🏁 Submit Exam' : mcqMode === 'free-end' ? '✓ Check All Answers' : '✓ Finish Practice'}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={resetQuiz}
+                        style={{
+                          background: '#ffffff', color: '#475569', border: '1.5px solid #cbd5e1',
+                          borderRadius: 50, padding: '5px 14px', fontSize: '0.78rem',
+                          fontWeight: 700, cursor: 'pointer'
+                        }}
+                      >
+                        🔄 Retake Quiz
+                      </button>
+                    )}
                   </div>
                 </div>
               )}
 
-              {/* Questions List Body */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '24px', background: '#fafafa' }}>
+              {/* ── Question Navigation Palette (Collapsible) ── */}
+              {showPalette && mcqMode && !mcqLoading && mcqQuestions.length > 0 && (
+                <div style={{
+                  background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0',
+                  padding: '12px 20px', maxHeight: 150, overflowY: 'auto'
+                }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#64748b', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Quick Navigation Grid (Click number to jump)
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {mcqQuestions
+                      .slice()
+                      .sort((a, b) => (a.ordering || 0) - (b.ordering || 0))
+                      .map((q, idx) => {
+                        const isAns = Boolean(userAnswers[q.id])
+                        const isFlag = Boolean(flaggedQuestions[q.id])
+                        const isCorrect = userAnswers[q.id] === q.correct_answer
+
+                        let bg = '#ffffff'
+                        let color = '#475569'
+                        let border = '1px solid #cbd5e1'
+
+                        if (isSubmitted) {
+                          if (isAns) {
+                            bg = isCorrect ? '#22c55e' : '#ef4444'
+                            color = 'white'
+                            border = 'none'
+                          } else {
+                            bg = '#f1f5f9'
+                            color = '#94a3b8'
+                          }
+                        } else {
+                          if (isAns) {
+                            bg = '#3b82f6'
+                            color = 'white'
+                            border = 'none'
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={q.id}
+                            type="button"
+                            onClick={() => {
+                              const el = document.getElementById(`q-item-${idx + 1}`)
+                              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                            }}
+                            style={{
+                              position: 'relative', width: 32, height: 32, borderRadius: 8,
+                              background: bg, color: color, border: border,
+                              fontWeight: 800, fontSize: '0.75rem', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}
+                          >
+                            {idx + 1}
+                            {isFlag && (
+                              <span style={{
+                                position: 'absolute', top: -3, right: -3,
+                                width: 8, height: 8, borderRadius: '50%',
+                                background: '#f59e0b', border: '1.5px solid white'
+                              }} />
+                            )}
+                          </button>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Main Modal Body ── */}
+              <div id="mcq-modal-body" style={{ flex: 1, overflowY: 'auto', padding: '24px', background: '#fafafa' }}>
                 {mcqLoading ? (
                   <div style={{ textAlign: 'center', padding: '60px 0' }}>
                     <div style={{
-                      width: 36, height: 36, border: '3px solid #bbf7d0',
+                      width: 40, height: 40, border: '3px solid #bbf7d0',
                       borderTopColor: '#16a34a', borderRadius: '50%',
-                      animation: 'spin 0.8s linear infinite', margin: '0 auto 12px'
+                      animation: 'spin 0.8s linear infinite', margin: '0 auto 14px'
                     }} />
-                    <p style={{ color: '#64748b', fontSize: '0.9rem' }}>Loading questions…</p>
+                    <p style={{ color: '#64748b', fontSize: '0.9rem', fontWeight: 600 }}>Loading MCQ questions…</p>
                   </div>
                 ) : mcqQuestions.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748b' }}>
@@ -847,79 +1069,347 @@ export default function PaperViewer({ grade = 'AL' }) {
                     <h4 style={{ margin: '0 0 4px', color: '#1e293b' }}>No MCQ questions found</h4>
                     <p style={{ margin: 0, fontSize: '0.85rem' }}>Questions have not been published for this paper yet.</p>
                   </div>
+                ) : mcqMode === null ? (
+                  /* ── 1. MODE SELECTION SETUP SCREEN ── */
+                  <div style={{ maxWidth: 680, margin: '20px auto 40px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                      <span style={{
+                        display: 'inline-block', fontSize: '0.75rem', fontWeight: 800,
+                        letterSpacing: '0.08em', textTransform: 'uppercase',
+                        color: '#16a34a', background: '#dcfce7', padding: '4px 14px', borderRadius: 50, marginBottom: 8
+                      }}>
+                        Choose Practice Experience
+                      </span>
+                      <h2 style={{ fontSize: '1.45rem', fontWeight: 900, color: '#1e293b', margin: '0 0 8px' }}>
+                        How would you like to practice?
+                      </h2>
+                      <p style={{ fontSize: '0.88rem', color: '#64748b', margin: 0 }}>
+                        Select the practice mode that fits your exam prep strategy best.
+                      </p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 18 }}>
+                      {/* Card 1: Timed Exam Mode */}
+                      <div style={{
+                        background: 'white', borderRadius: 20, border: '2px solid #bfdbfe',
+                        padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(59,130,246,0.08)', transition: 'transform 0.2s'
+                      }}>
+                        <div>
+                          <div style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontSize: '1.4rem', marginBottom: 14
+                          }}>
+                            ⏱️
+                          </div>
+                          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', margin: '0 0 6px' }}>
+                            Timed Exam Mode
+                          </h3>
+                          <div style={{
+                            display: 'inline-block', fontSize: '0.72rem', fontWeight: 800,
+                            color: '#1d4ed8', background: '#eff6ff', padding: '2px 8px', borderRadius: 12, marginBottom: 10
+                          }}>
+                            2 Hours (120 Mins) Countdown
+                          </div>
+                          <p style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 14px' }}>
+                            Simulates real exam conditions. Answers remain hidden until you submit. Includes question flagging, jump palette, and detailed post-exam scorecard.
+                          </p>
+                          <ul style={{ fontSize: '0.78rem', color: '#475569', paddingLeft: 18, margin: '0 0 20px', lineHeight: 1.7 }}>
+                            <li>🔒 Answers hidden during test</li>
+                            <li>🚩 Flag questions for review</li>
+                            <li>📊 Comprehensive result analytics & explanations</li>
+                          </ul>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => startMode('exam')}
+                          style={{
+                            width: '100%', background: 'linear-gradient(135deg,#3b82f6,#1d4ed8)',
+                            color: 'white', border: 'none', borderRadius: 12, padding: '12px',
+                            fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+                            boxShadow: '0 4px 12px rgba(59,130,246,0.3)'
+                          }}
+                        >
+                          🚀 Start Timed Exam
+                        </button>
+                      </div>
+
+                      {/* Card 2: Free Practice Mode */}
+                      <div style={{
+                        background: 'white', borderRadius: 20, border: '2px solid #bbf7d0',
+                        padding: 24, display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                        boxShadow: '0 4px 16px rgba(34,197,94,0.08)', transition: 'transform 0.2s'
+                      }}>
+                        <div>
+                          <div style={{
+                            width: 44, height: 44, borderRadius: 12,
+                            background: 'linear-gradient(135deg,#16a34a,#15803d)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: 'white', fontSize: '1.4rem', marginBottom: 14
+                          }}>
+                            🎯
+                          </div>
+                          <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#1e293b', margin: '0 0 6px' }}>
+                            Free Practice Mode
+                          </h3>
+                          <div style={{
+                            display: 'inline-block', fontSize: '0.72rem', fontWeight: 800,
+                            color: '#166534', background: '#f0fdf4', padding: '2px 8px', borderRadius: 12, marginBottom: 10
+                          }}>
+                            Self-Paced · No Timer
+                          </div>
+                          <p style={{ fontSize: '0.82rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 16px' }}>
+                            Learn stress-free without a timer. Choose whether you want feedback on every question immediately or check all answers at the end.
+                          </p>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <button
+                            type="button"
+                            onClick={() => startMode('free-instant')}
+                            style={{
+                              width: '100%', background: '#f0fdf4', border: '1.5px solid #22c55e',
+                              color: '#15803d', borderRadius: 12, padding: '10px 14px',
+                              fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                            }}
+                          >
+                            <span>💡 Instant Feedback (One-by-One)</span>
+                            <span>→</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => startMode('free-end')}
+                            style={{
+                              width: '100%', background: 'linear-gradient(135deg,#16a34a,#15803d)',
+                              border: 'none', color: 'white', borderRadius: 12, padding: '11px 14px',
+                              fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              boxShadow: '0 4px 12px rgba(22,163,74,0.25)'
+                            }}
+                          >
+                            <span>📋 Check All at End (Self-Paced)</span>
+                            <span>→</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
+                  /* ── 2. ACTIVE QUIZ / EXAM QUESTIONS VIEW ── */
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    {/* Top Scorecard when Submitted */}
+                    {isSubmitted && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                        borderRadius: 20, padding: '24px', color: 'white',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.15)', marginBottom: 8
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+                          <div>
+                            <span style={{
+                              fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase',
+                              letterSpacing: '0.1em', color: '#4ade80', background: 'rgba(74,222,128,0.15)',
+                              padding: '3px 10px', borderRadius: 20
+                            }}>
+                              Practice Completed
+                            </span>
+                            <h2 style={{ fontSize: '1.8rem', fontWeight: 900, margin: '8px 0 4px', color: 'white' }}>
+                              Score: {mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length} / {mcqQuestions.length}
+                              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#94a3b8', marginLeft: 10 }}>
+                                ({mcqQuestions.length > 0 ? Math.round((mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length / mcqQuestions.length) * 100) : 0}%)
+                              </span>
+                            </h2>
+                            <p style={{ fontSize: '0.85rem', color: '#cbd5e1', margin: 0 }}>
+                              {Math.round((mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length / mcqQuestions.length) * 100) >= 75
+                                ? '🏆 Outstanding Performance! You are well-prepared for this paper.'
+                                : Math.round((mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length / mcqQuestions.length) * 100) >= 50
+                                ? '👍 Good Job! Review the solutions and explanations below to master the remaining questions.'
+                                : '📚 Keep practicing! Carefully read each question\'s solution breakdown below to improve.'}
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '10px 16px', textAlign: 'center' }}>
+                              <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#4ade80' }}>
+                                {mcqQuestions.filter(q => userAnswers[q.id] === q.correct_answer).length}
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase' }}>Correct</div>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '10px 16px', textAlign: 'center' }}>
+                              <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f87171' }}>
+                                {mcqQuestions.filter(q => userAnswers[q.id] && userAnswers[q.id] !== q.correct_answer).length}
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase' }}>Incorrect</div>
+                            </div>
+
+                            <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '10px 16px', textAlign: 'center' }}>
+                              <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#94a3b8' }}>
+                                {mcqQuestions.filter(q => !userAnswers[q.id]).length}
+                              </div>
+                              <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase' }}>Skipped</div>
+                            </div>
+
+                            {mcqMode === 'exam' && (
+                              <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 12, padding: '10px 16px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#60a5fa' }}>
+                                  {formatTime(timeSpent)}
+                                </div>
+                                <div style={{ fontSize: '0.7rem', color: '#94a3b8', textTransform: 'uppercase' }}>Time Spent</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Question Cards List */}
                     {mcqQuestions
                       .slice()
                       .sort((a, b) => (a.ordering || 0) - (b.ordering || 0))
                       .map((q, idx) => {
                         const answered = userAnswers[q.id]
+                        const isFlagged = flaggedQuestions[q.id]
                         const isCorrect = answered === q.correct_answer
+                        const showFeedback = isSubmitted || (mcqMode === 'free-instant' && Boolean(answered))
+
+                        const qImg = q.question_image_url || q.question_image
+
                         const choices = [
-                          { letter: 'A', text: q.option_a },
-                          { letter: 'B', text: q.option_b },
-                          { letter: 'C', text: q.option_c },
-                          { letter: 'D', text: q.option_d },
+                          { letter: 'A', text: q.option_a, img: q.option_a_image_url || q.option_a_image },
+                          { letter: 'B', text: q.option_b, img: q.option_b_image_url || q.option_b_image },
+                          { letter: 'C', text: q.option_c, img: q.option_c_image_url || q.option_c_image },
+                          { letter: 'D', text: q.option_d, img: q.option_d_image_url || q.option_d_image },
                         ]
-                        if (q.option_e) choices.push({ letter: 'E', text: q.option_e })
+                        if (q.option_e || q.option_e_image || q.option_e_image_url) {
+                          choices.push({ letter: 'E', text: q.option_e, img: q.option_e_image_url || q.option_e_image })
+                        }
+
+                        const hasChoiceImages = choices.some(c => Boolean(c.img))
 
                         return (
                           <div
                             key={q.id}
+                            id={`q-item-${idx + 1}`}
                             style={{
-                              background: 'white', borderRadius: 16,
-                              border: '1.5px solid #e2e8f0', padding: 20,
-                              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+                              background: 'white', borderRadius: 18,
+                              border: isFlagged ? '2px solid #f59e0b' : '1.5px solid #e2e8f0',
+                              padding: 20,
+                              boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
+                              transition: 'all 0.2s'
                             }}
                           >
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
-                              <span style={{
-                                width: 32, height: 32, borderRadius: 8,
-                                background: answered ? (isCorrect ? '#22c55e' : '#ef4444') : '#1e293b',
-                                color: 'white', fontWeight: 800, fontSize: '0.82rem',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                flexShrink: 0, marginTop: 2
-                              }}>
-                                {idx + 1}
-                              </span>
-                              <div style={{ flex: 1, fontSize: '0.94rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}>
-                                <MathText text={q.question_text} />
+                            {/* Question Header & Title */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 14 }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1 }}>
+                                <span style={{
+                                  width: 34, height: 34, borderRadius: 10,
+                                  background: showFeedback
+                                    ? (answered ? (isCorrect ? '#22c55e' : '#ef4444') : '#64748b')
+                                    : answered ? '#3b82f6' : '#1e293b',
+                                  color: 'white', fontWeight: 800, fontSize: '0.85rem',
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                  flexShrink: 0, marginTop: 2
+                                }}>
+                                  {idx + 1}
+                                </span>
+
+                                <div style={{ flex: 1 }}>
+                                  {q.question_text && (
+                                    <div style={{ fontSize: '0.96rem', fontWeight: 600, color: '#1e293b', lineHeight: 1.6 }}>
+                                      <MathText text={q.question_text} />
+                                    </div>
+                                  )}
+
+                                  {/* Question Image Diagram */}
+                                  {qImg && (
+                                    <div style={{ marginTop: 10 }}>
+                                      <img
+                                        src={qImg}
+                                        alt={`Question ${idx + 1} Diagram`}
+                                        style={{
+                                          maxWidth: '100%', maxHeight: 260, objectFit: 'contain',
+                                          borderRadius: 10, border: '1.5px solid #e2e8f0', background: '#fafafa',
+                                          cursor: 'pointer', padding: 6
+                                        }}
+                                        onClick={() => setZoomImage({ src: qImg, title: `Question ${idx + 1} Diagram` })}
+                                      />
+                                      <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <span>🔍</span> Click diagram to zoom full-size
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
+
+                              {/* Flag Bookmark button */}
+                              {!isSubmitted && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleFlag(q.id)}
+                                  title="Flag question for review"
+                                  style={{
+                                    background: isFlagged ? '#fef3c7' : '#f8fafc',
+                                    border: `1.5px solid ${isFlagged ? '#f59e0b' : '#e2e8f0'}`,
+                                    color: isFlagged ? '#b45309' : '#64748b',
+                                    borderRadius: 8, padding: '4px 8px', fontSize: '0.75rem',
+                                    fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
+                                  }}
+                                >
+                                  {isFlagged ? '🚩 Flagged' : '🏳️ Flag'}
+                                </button>
+                              )}
                             </div>
 
-                            {/* Options */}
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginBottom: 12 }}>
+                            {/* Options A - E (Adaptive Grid layout if choices have images) */}
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: hasChoiceImages ? 'repeat(auto-fit, minmax(200px, 1fr))' : 'repeat(auto-fit, minmax(260px, 1fr))',
+                              gap: 10, marginBottom: 12
+                            }}>
                               {choices.map(c => {
                                 const isSelected = answered === c.letter
                                 const isRightChoice = c.letter === q.correct_answer
+
                                 let bg = '#f8fafc'
                                 let border = '1.5px solid #e2e8f0'
                                 let color = '#334155'
                                 let badgeBg = '#e2e8f0'
                                 let badgeColor = '#475569'
 
-                                if (answered) {
+                                if (showFeedback) {
                                   if (isSelected) {
                                     if (isCorrect) {
                                       bg = '#f0fdf4'
-                                      border = '1.5px solid #22c55e'
+                                      border = '2px solid #22c55e'
                                       color = '#15803d'
                                       badgeBg = '#22c55e'
                                       badgeColor = 'white'
                                     } else {
                                       bg = '#fef2f2'
-                                      border = '1.5px solid #ef4444'
+                                      border = '2px solid #ef4444'
                                       color = '#b91c1c'
                                       badgeBg = '#ef4444'
                                       badgeColor = 'white'
                                     }
                                   } else if (isRightChoice) {
                                     bg = '#f0fdf4'
-                                    border = '1.5px dashed #22c55e'
+                                    border = '2px dashed #22c55e'
                                     color = '#15803d'
                                     badgeBg = '#86efac'
                                     badgeColor = '#166534'
                                   }
+                                } else if (isSelected) {
+                                  // Selected in exam or check-at-end mode before submit
+                                  bg = '#eff6ff'
+                                  border = '2px solid #3b82f6'
+                                  color = '#1d4ed8'
+                                  badgeBg = '#3b82f6'
+                                  badgeColor = 'white'
                                 }
 
                                 return (
@@ -928,45 +1418,78 @@ export default function PaperViewer({ grade = 'AL' }) {
                                     type="button"
                                     onClick={() => handleSelectOption(q.id, c.letter)}
                                     style={{
-                                      display: 'flex', alignItems: 'center', gap: 10,
+                                      display: 'flex',
+                                      flexDirection: hasChoiceImages && c.img ? 'column' : 'row',
+                                      alignItems: hasChoiceImages && c.img ? 'stretch' : 'center',
+                                      gap: 10,
                                       padding: '10px 14px', borderRadius: 12,
                                       background: bg, border: border, color: color,
-                                      cursor: 'pointer', textAlign: 'left',
+                                      cursor: isSubmitted && mcqMode === 'exam' ? 'default' : 'pointer',
+                                      textAlign: 'left',
                                       transition: 'all 0.18s', outline: 'none'
                                     }}
                                   >
-                                    <span style={{
-                                      width: 26, height: 26, borderRadius: 6,
-                                      background: badgeBg, color: badgeColor,
-                                      fontWeight: 800, fontSize: '0.75rem',
-                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      flexShrink: 0
-                                    }}>
-                                      {c.letter}
-                                    </span>
-                                    <span style={{ fontSize: '0.86rem', fontWeight: 500, flex: 1 }}>
-                                      <MathText text={c.text} />
-                                    </span>
-                                    {answered && isSelected && (
-                                      <span>{isCorrect ? '✓' : '✕'}</span>
-                                    )}
-                                    {answered && !isSelected && isRightChoice && (
-                                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#16a34a' }}>Correct</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%' }}>
+                                      <span style={{
+                                        width: 28, height: 28, borderRadius: 8,
+                                        background: badgeBg, color: badgeColor,
+                                        fontWeight: 800, fontSize: '0.78rem',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        flexShrink: 0
+                                      }}>
+                                        {c.letter}
+                                      </span>
+
+                                      {c.text && (
+                                        <span style={{ fontSize: '0.88rem', fontWeight: 600, flex: 1 }}>
+                                          <MathText text={c.text} />
+                                        </span>
+                                      )}
+
+                                      {showFeedback && isSelected && (
+                                        <span style={{ fontWeight: 800, fontSize: '0.9rem' }}>{isCorrect ? '✓' : '✕'}</span>
+                                      )}
+                                      {showFeedback && !isSelected && isRightChoice && (
+                                        <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#16a34a', background: '#dcfce7', padding: '2px 6px', borderRadius: 6 }}>
+                                          Correct
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Choice Image thumbnail */}
+                                    {c.img && (
+                                      <div style={{ marginTop: 4, textAlign: 'center' }}>
+                                        <img
+                                          src={c.img}
+                                          alt={`Choice ${c.letter}`}
+                                          style={{
+                                            maxWidth: '100%', maxHeight: 110, objectFit: 'contain',
+                                            borderRadius: 8, border: '1px solid #cbd5e1', background: 'white', padding: 4
+                                          }}
+                                          onClick={e => {
+                                            e.stopPropagation()
+                                            setZoomImage({ src: c.img, title: `Question ${idx + 1} — Option ${c.letter}` })
+                                          }}
+                                        />
+                                        <div style={{ fontSize: '0.68rem', color: '#64748b', marginTop: 2 }}>
+                                          🔍 Zoom Image
+                                        </div>
+                                      </div>
                                     )}
                                   </button>
                                 )
                               })}
                             </div>
 
-                            {/* Explanation */}
-                            {answered && q.explanation && (
+                            {/* Solution / Explanation section */}
+                            {showFeedback && q.explanation && (
                               <div style={{
-                                background: '#eff6ff', border: '1px solid #bfdbfe',
-                                borderRadius: 10, padding: '10px 14px',
-                                fontSize: '0.84rem', color: '#1e40af', lineHeight: 1.5,
-                                marginTop: 8
+                                background: '#eff6ff', border: '1.5px solid #bfdbfe',
+                                borderRadius: 12, padding: '12px 16px',
+                                fontSize: '0.85rem', color: '#1e40af', lineHeight: 1.55,
+                                marginTop: 10
                               }}>
-                                <strong style={{ color: '#1d4ed8' }}>💡 Explanation: </strong>
+                                <strong style={{ color: '#1d4ed8' }}>💡 Explanation & Solution: </strong>
                                 <MathText text={q.explanation} />
                               </div>
                             )}
@@ -975,6 +1498,96 @@ export default function PaperViewer({ grade = 'AL' }) {
                       })}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Submit Confirmation Dialog ── */}
+        {showSubmitConfirm && (
+          <div className="pv-modal-overlay" style={{ zIndex: 110 }} onClick={() => setShowSubmitConfirm(false)}>
+            <div
+              style={{
+                background: 'white', borderRadius: 20, maxWidth: 440, width: '100%',
+                padding: '24px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', textAlign: 'center'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <span style={{ fontSize: '2.4rem', display: 'block', marginBottom: 8 }}>⚠️</span>
+              <h3 style={{ margin: '0 0 8px', fontSize: '1.2rem', fontWeight: 800, color: '#1e293b' }}>
+                Unanswered Questions
+              </h3>
+              <p style={{ fontSize: '0.88rem', color: '#64748b', lineHeight: 1.5, margin: '0 0 20px' }}>
+                You have answered <strong>{Object.keys(userAnswers).length}</strong> out of <strong>{mcqQuestions.length}</strong> questions.
+                Are you sure you want to finish and submit now?
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowSubmitConfirm(false)}
+                  style={{
+                    background: '#f1f5f9', border: '1.5px solid #cbd5e1', color: '#475569',
+                    borderRadius: 50, padding: '9px 18px', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer'
+                  }}
+                >
+                  Continue Answering
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmitQuiz}
+                  style={{
+                    background: 'linear-gradient(135deg,#ef4444,#dc2626)', color: 'white',
+                    border: 'none', borderRadius: 50, padding: '9px 20px', fontWeight: 800,
+                    fontSize: '0.82rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(239,68,68,0.3)'
+                  }}
+                >
+                  Yes, Submit Now
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Image Lightbox Zoom Modal ── */}
+        {zoomImage && (
+          <div
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+              backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', padding: 24
+            }}
+            onClick={() => setZoomImage(null)}
+          >
+            <div
+              style={{
+                background: 'white', borderRadius: 18, maxWidth: 900, width: '100%',
+                overflow: 'hidden', boxShadow: '0 25px 50px rgba(0,0,0,0.4)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                padding: '12px 20px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc'
+              }}>
+                <span style={{ fontWeight: 800, fontSize: '0.9rem', color: '#1e293b' }}>
+                  {zoomImage.title || 'Image Diagram'}
+                </span>
+                <button
+                  onClick={() => setZoomImage(null)}
+                  style={{
+                    background: '#e2e8f0', border: 'none', borderRadius: '50%',
+                    width: 30, height: 30, fontSize: '0.9rem', fontWeight: 800, cursor: 'pointer'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+              <div style={{ padding: 18, textAlign: 'center', background: '#f1f5f9', overflow: 'auto', maxHeight: '78vh' }}>
+                <img
+                  src={zoomImage.src}
+                  alt={zoomImage.title}
+                  style={{ maxWidth: '100%', maxHeight: '72vh', objectFit: 'contain', borderRadius: 10, boxShadow: '0 4px 14px rgba(0,0,0,0.1)' }}
+                />
               </div>
             </div>
           </div>
